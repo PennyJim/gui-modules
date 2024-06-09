@@ -8,15 +8,15 @@ local handler_names = {
 	pin = "window_frame:pin",
 }
 
-local function config_button(name, handler)
-	return frame_action_button(name, "flib_settings", { "gui.flib-settings" }, handler)
-end
-local function pin_button(name, handler)
-	return frame_action_button(name, "flib_pin", { "gui.flib-keep-open" }, handler)
-end
-local function close_button(name, handler)
-	return frame_action_button(name, "utility/close", { "gui.close-instruction" }, handler)
-end
+-- local function config_button(name, handler)
+-- 	return frame_action_button(name, "flib_settings", { "gui.flib-settings" }, handler)
+-- end
+-- local function pin_button(name, handler)
+-- 	return frame_action_button(name, "flib_pin", { "gui.flib-keep-open" }, handler)
+-- end
+-- local function close_button(name, handler)
+-- 	return frame_action_button(name, "utility/close", { "gui.close-instruction" }, handler)
+-- end
 
 ---@class frameWithButtonsParams
 ---@field name string The name of the root frame
@@ -63,7 +63,6 @@ function module.build_func(params)
 								type = "module", module_type = "frame_action_button",
 								sprite = "utility/close", tooltip = {"gui.flib-keep-open"},
 								handler = handler_names.pin
-
 							} or {},
 							params.has_close_button and {
 								type = "module", module_type = "frame_action_button",

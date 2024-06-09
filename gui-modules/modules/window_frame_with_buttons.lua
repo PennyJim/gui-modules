@@ -1,22 +1,12 @@
-local library = {}
+local module = {module_type = "window_frame", handlers = {}}
 
--- Taken from the flib test suite
---- @param name string
---- @param sprite string
---- @param tooltip LocalisedString
---- @param handler function
-local function frame_action_button(name, sprite, tooltip, handler)
-  return {
-    type = "sprite-button",
-    name = name,
-    style = "frame_action_button",
-    sprite = sprite .. "_white",
-    hovered_sprite = sprite .. "_black",
-    clicked_sprite = sprite .. "_black",
-    tooltip = tooltip,
-    handler = handler,
-  }
-end
+---@class WindowState.window_frame : WindowState
+-- Where custom fields would go
+
+local handler_names = {
+	close = "window_frame:close",
+	pin = "window_frame:pin",
+}
 
 local function config_button(name, handler)
 	return frame_action_button(name, "flib_settings", { "gui.flib-settings" }, handler)
@@ -28,45 +18,30 @@ local function close_button(name, handler)
 	return frame_action_button(name, "utility/close", { "gui.close-instruction" }, handler)
 end
 
--- local function close_button(name)
--- 	return {
--- 		type = "sprite-button",
--- 		name = name,
--- 		style = "close_button",
--- 		sprite = "utility/close_white",
--- 		hovered_sprite = "utility/close_black",
--- 		clicked_sprite = "utility/close_black",
--- 	}
--- end
-
 ---@class frameWithButtonsParams
 ---@field name string The name of the root frame
 ---@field title LocalisedString The title of the frame
----@field window_closed_handler fun(e) The handler for `on_gui_closed`
----@field close_name string The name of the close button
----@field close_handler fun(e) The handler of the close button
----@field pin_name string The name of the pin button
----@field pin_handler fun(e) The handler of the pin button
----@field config_name string The name of the config button
----@field config_handler fun(e) The handler of the config button
+---@field has_pin_button boolean Whether or not to add the pin button
+---@field has_close_button boolean Whether or not to add the close button
 ---@field children GuiElemDef The element that is contained within the frame
+
+module.parameters = {
+	name = "string",
+	title = "string",
+	-- has_config_button = "boolean", -- TODO: add the necessary fields or split off into a separate module
+	has_pin_button = "boolean",
+	has_close_button = "boolean",
+	children = "table",
+}
+
 ---Creates the frame for a window with an exit button
 ---@param params frameWithButtonsParams
 ---@return GuiElemDef
-function library.frame_with_buttons(params)
-	if not params.pin_name ~= not params.pin_handler then
-		error({"library-errors.only-one-nil", {"library-errors.pin-param"}}, 2)
-	end
-	if not params.config_name ~= not params.config_handler then
-		error({"library-errors.only-one-nil", {"library-errors.config-param"}}, 2)
-	end
-	if not params.close_name ~= not params.close_handler then
-		error({"library-errors.only-one-nil", {"library-errors.close-param"}}, 2)
-	end
+function module.build_func(params)
 	return {
 		type = "frame", name = params.name,
 		visible = false, elem_mods = { auto_center = true },
-		handler = {[defines.events.on_gui_closed] = params.window_closed_handler},
+		handler = {[defines.events.on_gui_closed] = handler_names.close},
 		children = {
 			{
 				type = "flow", direction = "vertical",
@@ -83,9 +58,18 @@ function library.frame_with_buttons(params)
 								type = "empty-widget", style = "flib_titlebar_drag_handle",
 								ignored_by_interaction = true,
 							},
-							params.pin_name and pin_button(params.pin_name, params.pin_handler) or {},
-							params.config_name and config_button(params.config_name, params.config_handler) or {},
-							params.close_name and close_button(params.close_name, params.close_handler) or {},
+							-- params.config_name and config_button(params.config_name, params.config_handler) or {},
+							params.has_pin_button and {
+								type = "module", module_type = "frame_action_button",
+								sprite = "utility/close", tooltip = {"gui.flib-keep-open"},
+								handler = handler_names.pin
+
+							} or {},
+							params.has_close_button and {
+								type = "module", module_type = "frame_action_button",
+								sprite = "flib_pin", tooltip = {"gui.close-instruction"},
+								handler = "hide"
+							} or {},
 						}
 					},
 					{
@@ -99,4 +83,31 @@ function library.frame_with_buttons(params)
 	}
 end
 
-return library
+---Handles the window closing
+---@param self WindowState.window_frame
+module.handlers[handler_names.close] = function (self)
+  if self.pinned then
+    return
+  end
+	self.player.opened = nil
+end
+---Handles the pinning of the window
+---@param self WindowState.window_frame
+module.handlers[handler_names.pin] = function (self)
+  self.pinned = not self.pinned
+  if self.pinned then
+    self.elems.close_button.tooltip = { "gui.close" }
+    self.elems.pin_button.sprite = "flib_pin_black"
+    self.elems.pin_button.style = "flib_selected_frame_action_button"
+    if self.player.opened == self.elems.flib_todo_window then
+      self.player.opened = nil
+    end
+  else
+    self.elems.close_button.tooltip = { "gui.close-instruction" }
+    self.elems.pin_button.sprite = "flib_pin_white"
+    self.elems.pin_button.style = "frame_action_button"
+    self.player.opened = self.elems.flib_todo_window
+  end
+end
+
+return module --[[@as GuiModuleDef]]

@@ -8,17 +8,9 @@ main.handlers = {}
 ---@field root LuaGuiElement the root element
 ---@field elems table<string,LuaGuiElement> the named elements
 ---@field player LuaPlayer the owner of the window
----@field pinned boolean whether or not this window is pinned
+---@field pinned boolean Whether or not the window has been pinned
 
---#region Private Event Handlers
-
----@param self WindowState
-function main.handlers.window_closed(self)
-  if self.pinned then
-    return
-  end
-	self.player.opened = nil
-end
+--#region Standard Event Handlers
 ---@param self WindowState
 function main.handlers.hide(self)
   self.root.visible = false

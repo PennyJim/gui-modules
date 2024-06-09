@@ -131,9 +131,8 @@ function main.shortcut_handler(shortcut)
 		if EventData.prototype_name == shortcut then
 			local player = game.get_player(EventData.player_index)
 			if not player then return end -- ??
-			local new_state = main.toggle_handler(EventData, player)
-
-
+			local new_state = main.toggle_handler(EventData, player) --[[@as boolean]]
+			player.set_shortcut_toggled(EventData.prototype_name, new_state)
 		end
 	end
 end

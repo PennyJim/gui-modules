@@ -42,6 +42,7 @@ end
 ---@class frameWithButtonsParams
 ---@field name string The name of the root frame
 ---@field title LocalisedString The title of the frame
+---@field window_closed_handler fun(e) The handler for `on_gui_closed`
 ---@field close_name string The name of the close button
 ---@field close_handler fun(e) The handler of the close button
 ---@field pin_name string The name of the pin button
@@ -65,6 +66,7 @@ function library.frame_with_buttons(params)
 	return {
 		type = "frame", name = params.name,
 		visible = false, elem_mods = { auto_center = true },
+		handler = {[defines.events.on_gui_closed] = params.window_closed_handler},
 		children = {
 			{
 				type = "flow", direction = "vertical",

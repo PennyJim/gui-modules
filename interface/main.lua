@@ -10,6 +10,8 @@ main.handlers = {}
 ---@field player LuaPlayer the owner of the window
 ---@field pinned boolean whether or not this window is pinned
 
+--#region Private Event Handlers
+
 ---@param self WindowState
 function main.handlers.window_closed(self)
   if self.pinned then
@@ -39,6 +41,7 @@ function main.handlers.toggle(self)
 	end
 	return self.root.visible
 end
+--#endregion
 
 
 ---Creates the interface for the player
@@ -85,7 +88,7 @@ flib_gui.add_handlers(main.handlers, function (e, handler)
 end)
 flib_gui.handle_events()
 
---#region Event Handlers
+--#region Public Event Handlers
 
 ---Initialization
 function main.init()

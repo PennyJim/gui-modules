@@ -2,10 +2,10 @@
 return {
 	module_type = "frame_action_button",
 	parameters = { -- TODO: make more sophisticated so the editor can turn some fields into drop-downs?
-		name = "string",
-		sprite = "string",
-		tooltip = "table",
-		handler = "string", -- The handler of the function
+		name = {is_optional = false, type = {"string"}},
+		sprite = {is_optional = false, type = {"string"}},
+		tooltip = {is_optional = true, type = {"table","string"}},
+		handler = {is_optional = false, type = {"string"}}, -- The name of tthe handler
 	},
 	build_func = function(params)
 		return {

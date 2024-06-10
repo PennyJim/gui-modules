@@ -19,11 +19,12 @@
 ---@class ModuleParameterDef
 ---@field is_optional boolean Whether or not this parameter is required
 ---@field type type[] The possible types of this parameter
+---@alias ModuleParameterDict {[string]:ModuleParameterDef}
 
 ---@class GuiModuleDef
 ---@field module_type string the name of the module
 ---@field build_func fun(parameters:table):GuiElemModuleDef the function to return a GuiElemDef out of the passed definition
----@field parameters {[string]:ModuleParameterDef} a table defining the possible parameters of the module
+---@field parameters ModuleParameterDict a table defining the possible parameters of the module
 ---@field handlers GuiModuleEventHandlers the handlers the module uses.
 
 ---@class WindowState

@@ -25,13 +25,14 @@ local handler_names = {
 ---@field has_close_button boolean Whether or not to add the close button
 ---@field children GuiElemDef The element that is contained within the frame
 
+---@type ModuleParameterDict
 module.parameters = {
-	name = "string",
-	title = "string",
+	name = {is_optional = false, type = {"string"}},
+	title = {is_optional = false, type = {"string"}},
 	-- has_config_button = "boolean", -- TODO: add the necessary fields or split off into a separate module
-	has_pin_button = "boolean",
-	has_close_button = "boolean",
-	children = "table",
+	has_pin_button = {is_optional = true, type = {"boolean"}},
+	has_close_button = {is_optional = true, type = {"boolean"}},
+	children = {is_optional = false, type = {"table"}},
 }
 
 ---Creates the frame for a window with an exit button

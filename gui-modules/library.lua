@@ -63,7 +63,7 @@ local function validate_module_params(module, params)
 
 		-- Error on extra parameters
 		if not acceptable then
-			error({"library-errors.parameter-extra", module.module_type, key}, 3)
+			error({"gui-errors.parameter-extra", module.module_type, key}, 3)
 		end
 
 		local is_valid_type = false
@@ -73,7 +73,7 @@ local function validate_module_params(module, params)
 			end
 		end
 		if not is_valid_type then
-			error({"library-errors.parameter-invalid-type", module.module_type, key, type(value)}, 3)
+			error({"gui-errors.parameter-invalid-type", module.module_type, key, type(value)}, 3)
 		end
 
 		-- Additional parameter checking possible?
@@ -84,7 +84,7 @@ local function validate_module_params(module, params)
 	-- Error for missing required parameters
 	for key, value in pairs(missing) do
 		if not value.is_optional then
-			error({"library-errors.parameter-missing", module.module_type, key}, 3)
+			error({"gui-errors.parameter-missing", module.module_type, key}, 3)
 		end
 	end
 end
@@ -95,7 +95,7 @@ end
 function build(player, namespace)
 	local info = definitions[namespace]
 	if not info then
-		error({"library-errors.undefined-namespace"}, 2)
+		error({"gui-errors.undefined-namespace"}, 2)
 	end
 
 	global[namespace][0] = info.version
@@ -173,7 +173,7 @@ function new_namespace(window_def)
 	local function register_handlers(new_handlers)
 		for name, handler in pairs(new_handlers) do
 			if handlers[name] then
-				log({"library-errors.duplicate-handler-name", name})
+				log({"gui-errors.duplicate-handler-name", name})
 			end
 			handlers[name] = handler
 		end
@@ -222,7 +222,7 @@ end
 ---@return fun(e:EventData.on_lua_shortcut)
 function main.shortcut_handler(shortcut)
 	if not shortcut then
-		error({"library-errors.unknown-shortcut"}, 2)
+		error({"gui-errors.unknown-shortcut"}, 2)
 	end
 	---Handles the shortcut event
 	---@param EventData EventData.on_lua_shortcut

@@ -57,7 +57,11 @@ end
 ---@param params table
 local function validate_module_params(module, params)
 	local acceptable_description = module.parameters
-	local missing = table.deepcopy(module.parameters)
+	---@type {[string]:ModuleParameterDef}
+	local missing = {} -- mark every paramtere as 'missing'
+	for key, value in pairs(acceptable_description) do
+		missing[key] = value
+	end
 
 	-- Validate each present parameter
 	for key, value in pairs(params) do
@@ -94,9 +98,7 @@ local function validate_module_params(module, params)
 	end
 end
 
----Go over every element,
----Convert modules into their elements, and
----Resolve handler names into the handlers
+---Go over every element and expand modules into their elements
 ---@param definition GuiElemModuleDef[]
 function expand_modules(definition)
 	for child_array, index, child in every_child(definition) do
@@ -107,7 +109,8 @@ function expand_modules(definition)
 			---@type GuiModuleDef
 			local module = modules[child.module_type]
 			validate_module_params(module, child)
-			child = module.build_func(child)
+			local expanded_module = module.build_func(child)
+			child_array[index] = expanded_module
 		end
 	end
 end
@@ -166,7 +169,6 @@ function new_namespace(window_def)
 	local namespace = window_def.namespace
 	definitions[namespace] = window_def
 
-	global[namespace][0] = window_def.version
 	expand_modules(window_def.definition)
 
 	---@type GuiModuleEventHandlers
@@ -203,8 +205,9 @@ end
 
 ---Initialization
 function main.init()
-	for name_space in pairs(definitions) do
-		global[name_space] = global[name_space] or {}
+	for namespace, info in pairs(definitions) do
+		global[namespace] = global[namespace] or {}
+		global[namespace][0] = global[namespace][0] or info.version
 	end
 end
 ---Handles the events of new players
@@ -249,4 +252,10 @@ end
 -- TODO: add a configuration changed handler that tracks what version of of UI it is
 -- If the version is different, just kill and rebuild the menus
 
-return main
+--- HACK: register these events in a way that's not overwrittable
+script.on_init(main.init)
+script.on_event("visual-editor", main.toggle_handler)
+script.on_event(defines.events.on_lua_shortcut, main.shortcut_handler)
+script.on_event(defines.events.on_player_created, main.created_player_handler)
+
+return new_namespace

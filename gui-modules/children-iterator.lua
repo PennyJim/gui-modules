@@ -39,6 +39,11 @@ end
 ---@return integer? index where in that array the child is
 ---@return GuiElemModuleDef? child
 local function iterator(s)
+	if s.currentIndex then
+		-- Add the next children to the list *after* whatever's
+		-- using this iterator can affect the returned child
+		combine(s.nextParents, s.currentChildren)
+	end
 	local child
 	repeat
 		repeat -- ignore non-array indexes
@@ -54,9 +59,8 @@ local function iterator(s)
 				return nil -- If there's no more parents, then there's no more children either
 			end
 
-			-- Add the next children to the list
+			-- Get the next children
 			s.currentChildren = getChildrenArray(s.currentParent)
-			combine(s.nextParents, s.currentChildren)
 		end
 	until s.currentIndex
 	-- Return the next parent, index, and child

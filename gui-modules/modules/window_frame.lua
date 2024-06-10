@@ -62,13 +62,13 @@ function module.build_func(params)
 							-- params.config_name and config_button(params.config_name, params.config_handler) or {},
 							params.has_pin_button and {
 								type = "module", module_type = "frame_action_button",
-								sprite = "utility/close", tooltip = {"gui.flib-keep-open"},
-								handler = handler_names.pin
+								name = "pin-button", tooltip = {"gui.flib-keep-open"},
+								sprite = "utility/close", handler = handler_names.pin
 							} or {},
 							params.has_close_button and {
 								type = "module", module_type = "frame_action_button",
-								sprite = "flib_pin", tooltip = {"gui.close-instruction"},
-								handler = "hide"
+								name = "window_close_button", tooltip = {"gui.close-instruction"},
+								sprite = "flib_pin", handler = "hide"
 							} or {},
 						}
 					},

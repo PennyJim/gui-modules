@@ -6,6 +6,7 @@ end
 ---@type flib_gui
 local flib_gui = require("__flib__.gui-lite")
 local gui_events = require("__gui-modules__.gui_events")
+local validate_module_params = require("__gui-modules__.module_validation")
 local every_child = require("__gui-modules__.children-iterator")
 local standard_handlers = {}
 
@@ -118,51 +119,6 @@ event_lib[defines.events.on_player_removed] = removed_player_handler
 event_lib[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 --#endregion
 
----Validates the parameters of the module
----@param module GuiModuleDef
----@param params table
-local function validate_module_params(module, params)
-	local acceptable_description = module.parameters
-	---@type {[string]:ModuleParameterDef}
-	local missing = {} -- mark every paramtere as 'missing'
-	for key, value in pairs(acceptable_description) do
-		missing[key] = value
-	end
-
-	-- Validate each present parameter
-	for key, value in pairs(params) do
-		if key == "type" or key == "module_type" then goto continue end
-		missing[key] = nil -- mark as not missing
-		local acceptable = acceptable_description[key]
-
-		-- Error on extra parameters
-		if not acceptable then
-			error({"gui-errors.parameter-extra", module.module_type, key}, 4) -- TODO: Test all error messages
-		end
-
-		local is_valid_type = false
-		for _, valid_type in pairs(acceptable.type) do
-			if type(value) == valid_type then
-				is_valid_type = true
-				break
-			end
-		end
-		if not is_valid_type then
-			error({"gui-errors.parameter-invalid-type", module.module_type, key, type(value)}, 4)
-		end
-
-		-- Additional parameter checking possible?
-		-- Might grow as the parameters's fields expands
-    ::continue::
-	end
-
-	-- Error for missing required parameters
-	for key, value in pairs(missing) do
-		if not value.is_optional then
-			error({"gui-errors.parameter-missing", module.module_type, key}, 4)
-		end
-	end
-end
 
 ---Expands the module into their elements
 ---@param namespace namespace
@@ -186,7 +142,6 @@ local function expand_module(namespace, arr, index, child)
 	arr[index] = new_child
 	return new_child
 end
-
 ---Go over every element and expand modules and prepend the namespace to handlers
 ---@param namespace namespace
 ---@param definition GuiElemModuleDef[]

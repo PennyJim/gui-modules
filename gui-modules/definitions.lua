@@ -24,6 +24,7 @@
 ---@class ModuleParameterDef
 ---@field is_optional boolean Whether or not this parameter is required
 ---@field type type[] The possible types of this parameter
+---@field enum string[]? The possible values for a string
 ---@alias ModuleParameterDict {[string]:ModuleParameterDef}
 
 ---@class GuiModuleDef

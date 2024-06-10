@@ -109,7 +109,8 @@ end
 
 ---Go over every element and expand modules into their elements
 ---@param definition GuiElemModuleDef[]
-function expand_modules(definition)
+---@param handler_map GuiModuleEventHandlers
+function expand_modules(definition, handler_map)
 	for child_array, index, child in every_child(definition) do
 		if child.type == "module" then
 			if not child.module_type then
@@ -118,8 +119,45 @@ function expand_modules(definition)
 			---@type GuiModuleDef
 			local module = modules[child.module_type]
 			validate_module_params(module, child)
-			local expanded_module = module.build_func(child)
-			child_array[index] = expanded_module
+			-- Register the module handlers
+			for key, handler in pairs(module.handlers) do
+				if not handler_map[key] then
+					handler_map[key] = handler
+				else
+					log{"gui-errors.module-handler-overridden", key}
+				end
+			end
+			-- replace the module element with the expanded elements
+			child_array[index] = module.build_func(child)
+		end
+	end
+end
+
+---Go over every element and resolve handler names into functions
+---@param definition GuiElemModuleDef[]
+---@param handler_map GuiModuleEventHandlers
+function resolve_handlers(definition, handler_map)
+	for _,_, child in every_child(definition) do
+		local given_handler = child.handler
+		if given_handler then
+			local given_type = type(given_handler)
+
+			if given_type == "string" then -- Resolve direct hanlders
+				local handler = handler_map[given_handler]
+				if not handler then
+					error({"gui-errors.unknown-handler", given_handler}, 3)
+				end
+				child.handler = handler
+
+			elseif given_type == "table" then -- Resolve a map of events to handlers
+				for event, given_event_handler in pairs(given_handler) do
+					local handler = handler_map[given_event_handler]
+					if not handler then
+						error({"gui-errors.unknown-handler", given_event_handler}, 3)
+					end
+					given_handler[event] = handler
+				end
+			end
 		end
 	end
 end
@@ -178,15 +216,17 @@ function new_namespace(window_def)
 	local namespace = window_def.namespace
 	definitions[namespace] = window_def
 
-	expand_modules(window_def.definition)
+-- TODO: check global to see if there's another version, and purge the UI's if so
 
 	---@type GuiModuleEventHandlers
 	local handlers = {
+		["close"] = standard_handlers.close,
 		["hide"] = standard_handlers.hide,
 		["show"] = standard_handlers.show,
 		["toggle"] = standard_handlers.toggle,
 	}
 	namespace_handlers[namespace] = handlers
+	expand_modules(window_def.definition, handlers)
 
 	---Adds the handlers to the internal library and registers them with flib
 	---@param new_handlers GuiModuleEventHandlers

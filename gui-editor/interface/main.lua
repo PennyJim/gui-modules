@@ -1,4 +1,4 @@
-require("__gui-modules__.library"){
+require("__gui-modules__.gui"){
 	namespace = "testing",
 	version = 0,
 	root = "screen",

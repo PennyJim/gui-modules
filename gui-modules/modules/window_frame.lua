@@ -7,7 +7,7 @@ local handler_names = {
 	pin = "window_frame.pin",
 }
 
----@class frameWithButtonsParams
+---@class WindowFrameButtonsParams : ModuleParams
 ---@field name string The name of the root frame
 ---@field title LocalisedString The title of the frame
 ---@field has_pin_button boolean Whether or not to add the pin button
@@ -24,7 +24,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params frameWithButtonsParams
+---@param params WindowFrameButtonsParams
 ---@return GuiElemDef
 function module.build_func(params)
 	return {

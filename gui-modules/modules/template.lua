@@ -8,7 +8,7 @@ local handler_names = {
 	-- in both handler definitons and in the build_func
 }
 
----@class myModuleParams
+---@class myModuleParams : ModuleParams
 -- where LuaLS parameter definitons go
 ---@type ModuleParameterDict
 module.parameters = {

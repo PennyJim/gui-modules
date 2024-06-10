@@ -26,7 +26,7 @@ for name, setting in pairs(settings.startup) do
 		---@type GuiModuleDef
 		local module = require(setting.value --[[@as string]])
 		if module.module_type ~= module_name then
-			log({"library-errors.different-expected-name", module_name, module.module_type})
+			log{"library-errors.different-expected-name", module_name, module.module_type}
 		end
 		validate_module(module)
 	end

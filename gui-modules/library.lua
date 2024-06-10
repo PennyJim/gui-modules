@@ -80,7 +80,7 @@ local function validate_module_params(module, params)
 
 		-- Error on extra parameters
 		if not acceptable then
-			error({"gui-errors.parameter-extra", module.module_type, key}, 3)
+			error({"gui-errors.parameter-extra", module.module_type, key}, 4) -- TODO: Test all error messages
 		end
 
 		local is_valid_type = false
@@ -91,7 +91,7 @@ local function validate_module_params(module, params)
 			end
 		end
 		if not is_valid_type then
-			error({"gui-errors.parameter-invalid-type", module.module_type, key, type(value)}, 3)
+			error({"gui-errors.parameter-invalid-type", module.module_type, key, type(value)}, 4)
 		end
 
 		-- Additional parameter checking possible?
@@ -102,7 +102,7 @@ local function validate_module_params(module, params)
 	-- Error for missing required parameters
 	for key, value in pairs(missing) do
 		if not value.is_optional then
-			error({"gui-errors.parameter-missing", module.module_type, key}, 3)
+			error({"gui-errors.parameter-missing", module.module_type, key}, 4)
 		end
 	end
 end
@@ -124,7 +124,7 @@ function expand_modules(definition, handler_map)
 				if not handler_map[key] then
 					handler_map[key] = handler
 				else
-					log{"gui-errors.module-handler-overridden", key}
+					log{"gui-warnings.module-handler-overridden", child.module_type, key}
 				end
 			end
 			-- replace the module element with the expanded elements
@@ -235,7 +235,7 @@ function new_namespace(window_def)
 	local function register_handlers(new_handlers, shortcut_name, custominput_name)
 		for name, handler in pairs(new_handlers) do
 			if handlers[name] then
-				log({"gui-errors.duplicate-handler-name", name})
+				log({"gui-warnings.duplicate-handler-name", name})
 			end
 			handlers[name] = handler
 		end

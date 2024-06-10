@@ -93,50 +93,51 @@ local function validate_module_params(module, params)
 	end
 end
 
----Builds the interface in the namespace for the player
+---Go over every element,
+---Convert modules into their elements, and
+---Resolve handler names into the handlers
+---@param definition GuiElemModuleDef[]
+function expand_modules(definition)
+	for child_array, index, child in every_child(definition) do
+		if child.type == "module" then
+			if not child.module_type then
+				error({"gui-errors.no-module-name"})
+			end
+			---@type GuiModuleDef
+			local module = modules[child.module_type]
+			validate_module_params(module, child)
+			child = module.build_func(child)
+		end
+	end
+end
+
+---Builds the gui in the namespace for the given player
 ---@param player LuaPlayer
 ---@param namespace string
+---@return WindowState
 function build(player, namespace)
 	local info = definitions[namespace]
 	if not info then
 		error({"gui-errors.undefined-namespace"}, 2)
 	end
 
-	global[namespace][0] = info.version
-	local definition = info.definition
-	for key, value in pairs(t) do
-		
-	end
+	local elems, root = flib_gui.add(
+		player.gui[info.root],
+		info.definition
+	)
+
+	---@type WindowState
+	local self = {
+		root = root,
+		elems = elems,
+		player = player,
+		pinned = false
+	}
+	global[namespace][player.index] = self
+	-- TODO: initialize windowstate values defined in `info`
+
+	return self
 end
--- ---Creates the interface for the player
--- ---@param player LuaPlayer
--- ---@return WindowState
--- function main.create(player)
--- 	local elems, root = flib_gui.add(player.gui.screen,
--- 		modules.frame_with_buttons{
--- 			name = "root-element",
--- 			title = "TEST",
--- 			window_closed_handler = standard_handlers.window_closed,
--- 			close_name = "close",
--- 			close_handler = standard_handlers.hide,
--- 			children = {
--- 				type = "label",
--- 				caption = "This is to test that it works :P"
--- 			}
--- 		}
--- 	)
--- 	---@type WindowState
--- 	local self = {
--- 		root = root,
--- 		elems = elems,
--- 		player = player,
--- 		-- Module state variables
--- 		pinned = false,
--- 		-- User state varaibles
--- 	}
--- 	global.main[player.index] = self
--- 	return self
--- end
 
 ---Creates the wrapper for the namespace
 ---@param namespace string
@@ -163,6 +164,9 @@ flib_gui.handle_events()
 function new_namespace(window_def)
 	local namespace = window_def.namespace
 	definitions[namespace] = window_def
+
+	global[namespace][0] = window_def.version
+	expand_modules(window_def.definition)
 
 	---@type GuiModuleEventHandlers
 	local handlers = {

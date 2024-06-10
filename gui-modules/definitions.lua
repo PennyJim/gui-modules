@@ -11,6 +11,7 @@
 ---@field namespace string the namespace the global table is put into
 ---@field version integer the version of the UI. Will automatically recreate the UI if the stored version is different than the given one
 ---@field definition GuiElemModuleDef[] the elements/modules used to create the window
+---@field root "top"|"left"|"center"|"goal"|"screen"
 
 ---@class GuiModuleEventHandlers
 ---@field [string] fun(self:WindowState,namespace:string,event:EventData)

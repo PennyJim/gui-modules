@@ -45,10 +45,16 @@ end
 ---@param self WindowState
 function standard_handlers.hide(self)
 	self.root.visible = false
+	if self.shortcut then -- Update registred shortcut
+		self.player.set_shortcut_toggled(self.shortcut, false)
+	end
 end
 ---@param self WindowState
 function standard_handlers.show(self)
 	self.root.visible = true
+	if self.shortcut then -- Update registred shortcut
+		self.player.set_shortcut_toggled(self.shortcut, true)
+	end
 	-- Focus something if it should be focused by default
   if not self.pinned then
     self.player.opened = self.root
@@ -212,7 +218,8 @@ function build(player, namespace)
 		root = root,
 		elems = elems,
 		player = player,
-		pinned = false
+		pinned = false,
+		shortcut = info.shortcut
 	}
 	global[namespace][player.index] = self
 	-- TODO: initialize windowstate values defined in `info`
@@ -238,6 +245,9 @@ function new_namespace(window_def, shortcut_name, custominput_name)
 	definitions[namespace] = window_def
 
 	-- TODO: check global to see if there's another version, and purge the UI's if so
+
+	shortcut_name = shortcut_name or window_def.shortcut
+	custominput_name = custominput_name or window_def.custominput
 
 	if shortcut_name then
 		shortcut_namespace[shortcut_name] = namespace

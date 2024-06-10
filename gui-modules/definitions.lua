@@ -37,3 +37,4 @@
 ---@field elems table<string,LuaGuiElement> the named elements
 ---@field player LuaPlayer the owner of the window
 ---@field pinned boolean Whether or not the window has been pinned
+---@field shortcut string? The registered shortcut for the window

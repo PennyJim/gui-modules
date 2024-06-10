@@ -1,6 +1,7 @@
 ---@meta
 
 ---@class GuiElemModuleDef : GuiElemDef (might be element)
+---@field children GuiElemModuleDef[]?
 -- if type == "module" then module_type must be set
 
 ---@class GuiWindowDef

@@ -1,5 +1,6 @@
 ---@type flib_gui
 local flib_gui = require("__flib__.gui-lite")
+local every_child = require("__gui-modules__.children-iterator")
 local main = {}
 local standard_handlers = {}
 

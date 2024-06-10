@@ -1,6 +1,5 @@
-require("__gui-modules__.gui"){
-	namespace = "testing",
-	version = 0,
+require("__gui-modules__.gui").new{
+	namespace = "testing", version = 0,
 	root = "screen",
 	definition = {
 		{
@@ -16,6 +15,6 @@ require("__gui-modules__.gui"){
 			}
 		}
 	}
-}({
+}--[[@as GuiWindowDef]]{
 	-- other Handlers go here
-},"visual-editor", "visual-editor")
+}

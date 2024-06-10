@@ -6,15 +6,20 @@
 ---@field type GuiElementType|"module"
 ---@field children GuiElemModuleDef[]?
 ---@field module_type string? The name of the module
+---@field handler GuiModuleEventHandlerNames?
 
 ---@class GuiWindowDef
 ---@field namespace string the namespace the global table is put into
 ---@field version integer the version of the UI. Will automatically recreate the UI if the stored version is different than the given one
 ---@field definition GuiElemModuleDef[] the elements/modules used to create the window
 ---@field root "top"|"left"|"center"|"goal"|"screen"
+---@field custominput string?
+---@field shortcut string?
 
----@class GuiModuleEventHandlers
----@field [string] fun(self:WindowState,namespace:string,event:EventData)
+---@alias GuiModuleEventHandler fun(self:WindowState,namespace:string,event:GuiEventData)
+---@alias GuiModuleEventHandlers table<defines.events, GuiModuleEventHandler>
+---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
+---@alias GuiModuleEventHandlerNames string|table<defines.events,string>
 
 ---@class ModuleParameterDef
 ---@field is_optional boolean Whether or not this parameter is required

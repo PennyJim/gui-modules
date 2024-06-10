@@ -1,7 +1,12 @@
+-- Singleton
+if ... ~= "__gui-modules__.gui" then
+	return require("__gui-modules__.gui")
+end
+
 ---@type flib_gui
 local flib_gui = require("__flib__.gui-lite")
+local gui_events = require("__gui-modules__.gui_events")
 local every_child = require("__gui-modules__.children-iterator")
-local main = {}
 local standard_handlers = {}
 
 ---@type {[string]:GuiModuleDef}
@@ -60,6 +65,52 @@ function standard_handlers.toggle(self)
 	return self.root.visible
 end
 --#endregion
+--#region Generic Event Handlers
+
+---Handles the creation of new players
+---@param EventData EventData.on_player_created
+function created_player_handler(EventData)
+	local player = game.get_player(EventData.player_index)
+	if not player then return end -- ??
+
+	for name_space in pairs(definitions) do
+		build(player, name_space)
+	end
+end
+---Handles the removal of players
+---@param EventData EventData.on_player_removed
+function removed_player_handler(EventData)
+	for namespace in pairs(definitions) do
+		global[namespace][EventData.player_index] = nil
+	end
+end
+---Opens the element of the player that this event sourced from.
+---Will create a new one if one isn't found
+---@param EventData EventData.CustomInputEvent|EventData.on_lua_shortcut
+function input_or_shortcut_handler(EventData)
+	local namespace
+	if EventData.input_name then
+		namespace = custominput_namespace[EventData.input_name]
+	else
+		namespace = shortcut_namespace[EventData.prototype_name]
+	end
+	if not namespace then return end -- Not one we've been told to handle
+	local player = game.get_player(EventData.player_index)
+	if not player then return end -- ??
+
+	local self = global[namespace][player.index]
+	if not self or not self.root.valid then
+		self = build(player, namespace)
+	end
+
+	standard_handlers.toggle(self)
+end
+
+local event_lib = gui_events.events
+event_lib[defines.events.on_player_created] = created_player_handler
+event_lib[defines.events.on_player_removed] = removed_player_handler
+event_lib[defines.events.on_lua_shortcut] = input_or_shortcut_handler
+--#endregion
 
 ---Validates the parameters of the module
 ---@param module GuiModuleDef
@@ -107,60 +158,39 @@ local function validate_module_params(module, params)
 	end
 end
 
----Go over every element and expand modules into their elements
+---Expands the module into their elements
+---@param namespace namespace
+---@param arr GuiElemModuleDef[]
+---@param index integer
+---@param child GuiElemModuleDef
+---@return GuiElemModuleDef
+local function expand_module(namespace, arr, index, child)
+	if child.type ~= "module" then return child end -- Skip if not module
+	local mod_type = child.module_type
+	if not mod_type then 
+		error({"gui-errors.no-module-name"})
+	end
+
+	local module = modules[mod_type]
+	validate_module_params(module, child)
+	-- Register the module handlers
+	gui_events.register(module.handlers, namespace)
+	-- replace the module element with the expanded elements
+	local new_child = module.build_func(child)
+	arr[index] = new_child
+	return new_child
+end
+
+---Go over every element and expand modules and prepend the namespace to handlers
+---@param namespace namespace
 ---@param definition GuiElemModuleDef[]
----@param handler_map GuiModuleEventHandlers
-function expand_modules(definition, handler_map)
+local function parse_children(namespace, definition)
 	for child_array, index, child in every_child(definition) do
-		if child.type == "module" then
-			if not child.module_type then
-				error({"gui-errors.no-module-name"})
-			end
-			---@type GuiModuleDef
-			local module = modules[child.module_type]
-			validate_module_params(module, child)
-			-- Register the module handlers
-			for key, handler in pairs(module.handlers) do
-				if not handler_map[key] then
-					handler_map[key] = handler
-				else
-					log{"gui-warnings.module-handler-overridden", child.module_type, key}
-				end
-			end
-			-- replace the module element with the expanded elements
-			child_array[index] = module.build_func(child)
-		end
+		child = expand_module(namespace, child_array, index, child)
+		gui_events.convert_handler_names(namespace, child)
 	end
 end
 
----Go over every element and resolve handler names into functions
----@param definition GuiElemModuleDef[]
----@param handler_map GuiModuleEventHandlers
-function resolve_handlers(definition, handler_map)
-	for _,_, child in every_child(definition) do
-		local given_handler = child.handler
-		if given_handler then
-			local given_type = type(given_handler)
-
-			if given_type == "string" then -- Resolve direct hanlders
-				local handler = handler_map[given_handler]
-				if not handler then
-					error({"gui-errors.unknown-handler", given_handler}, 3)
-				end
-				child.handler = handler
-
-			elseif given_type == "table" then -- Resolve a map of events to handlers
-				for event, given_event_handler in pairs(given_handler) do
-					local handler = handler_map[given_event_handler]
-					if not handler then
-						error({"gui-errors.unknown-handler", given_event_handler}, 3)
-					end
-					given_handler[event] = handler
-				end
-			end
-		end
-	end
-end
 
 ---Builds the gui in the namespace for the given player
 ---@param player LuaPlayer
@@ -189,118 +219,58 @@ function build(player, namespace)
 
 	return self
 end
-
----Creates the wrapper for the namespace
----@param namespace string
----@return fun(e,h:fun(self,s,e))
-local function event_wrapper(namespace)
-	return function (e, handler)
-		local self = global[namespace][e.player_index]
-		if not self then return end
-
-		if self.root.valid then
-			handler(self, namespace, e)
-		else
-			-- Delete the entry of an invalid gui
-			global[namespace][e.player_index] = nil
-		end
-	end
-end
-flib_gui.handle_events()
+-- flib_gui.handle_events() -- flib resolves functions to names and and wraps it in a separate lookup table. It's evil >:(
 
 
 ---Creates a new namespace with the window definition
 ---@param window_def GuiWindowDef
----@return fun(h:GuiModuleEventHandlers,s:string,c:string)
-function new_namespace(window_def)
+---@param shortcut_name string?
+---@param custominput_name string?
+---@return fun(h:GuiModuleEventHandlers):table
+function new_namespace(window_def, shortcut_name, custominput_name)
 	local namespace = window_def.namespace
+	if namespace:match("/") then
+		error({"gui-errors.invalid-namespace", namespace, namespace:match("/")}, 2)
+	end
+	if definitions[namespace] then
+		error({"gui-errors.namespace-already-defined", namespace}, 2)
+	end
 	definitions[namespace] = window_def
 
--- TODO: check global to see if there's another version, and purge the UI's if so
+	-- TODO: check global to see if there's another version, and purge the UI's if so
+
+	if shortcut_name then
+		shortcut_namespace[shortcut_name] = namespace
+	end
+	if custominput_name then
+		custominput_namespace[custominput_name] = namespace
+		event_lib[custominput_name] = input_or_shortcut_handler
+	end
 
 	---@type GuiModuleEventHandlers
-	local handlers = {
-		["close"] = standard_handlers.close,
-		["hide"] = standard_handlers.hide,
-		["show"] = standard_handlers.show,
-		["toggle"] = standard_handlers.toggle,
-	}
-	namespace_handlers[namespace] = handlers
-	expand_modules(window_def.definition, handlers)
+	local handlers = {}
+	for key, func in pairs(standard_handlers) do
+		handlers[key] = func
+	end
+	parse_children(namespace, window_def.definition)
 
 	---Adds the handlers to the internal library and registers them with flib
 	---@param new_handlers GuiModuleEventHandlers
-	---@param shortcut_name string
-	---@param custominput_name string
-	local function register_handlers(new_handlers, shortcut_name, custominput_name)
+	local function register_handlers(new_handlers)
 		for name, handler in pairs(new_handlers) do
 			if handlers[name] then
 				log({"gui-warnings.duplicate-handler-name", name})
 			end
 			handlers[name] = handler
 		end
-		-- FIXME: Might require us to prepend the names with the namespace to avoid collisions. Check that before releasing
-		flib_gui.add_handlers(handlers, event_wrapper(namespace))
-		resolve_handlers(window_def.definition, handlers)
+		gui_events.register(handlers, namespace, false)
 		global[namespace] = global[namespace] or {}
 		global[namespace][0] = window_def.version
-
-		if shortcut_name then
-			shortcut_namespace[shortcut_name] = namespace
-		end
-		if custominput_name then
-			custominput_namespace[custominput_name] = namespace
-		end
-
 	end
 	return register_handlers
 end
 
----Handles the events of new players
----@param EventData EventData.on_player_created
-function main.created_player_handler(EventData)
-	local player = game.get_player(EventData.player_index)
-	if not player then return end -- ??
-
-	for name_space in pairs(definitions) do
-		build(player, name_space)
-	end
-end
----Opens the element of the player that this event sourced from.
----Will create a new one if one isn't found
----@param EventData EventData.CustomInputEvent
----@return boolean? -- The state of the window, if player existed
----@overload fun(EventData:EventData.on_lua_shortcut,player:LuaPlayer,namespace:namespace):boolean
-function main.custominput_handler(EventData, player, namespace)
-	namespace = namespace or custominput_namespace[EventData.input_name]
-	if not namespace then return end -- Not one we've been told to handle
-	player = player or game.get_player(EventData.player_index)
-	if not player then return end -- ??
-
-	local self = global[namespace][player.index]
-	if not self or not self.root.valid then
-		self = build(player, namespace)
-	end
-
-	return standard_handlers.toggle(self)
-end
----Handles the custom input events
----@param EventData EventData.on_lua_shortcut
-function main.shortcut_handler(EventData)
-	local namespace = shortcut_namespace[EventData.prototype_name]
-	if not namespace then return end -- Not one we've been told to handle
-	local player = game.get_player(EventData.player_index)
-	if not player then return end -- ??
-
-	local new_state = main.custominput_handler(EventData, player, namespace)
-	player.set_shortcut_toggled(EventData.prototype_name, new_state)
-end
--- If the version is different, just kill and rebuild the menus
-
---- HACK: register these events in a way that's not overwrittable
-script.on_event("visual-editor", main.toggle_handler)
-script.on_event("visual-editor", main.custominput_handler)
-script.on_event(defines.events.on_lua_shortcut, main.shortcut_handler)
-script.on_event(defines.events.on_player_created, main.created_player_handler)
-
-return new_namespace
+return {
+	new = new_namespace,
+	events = event_lib,
+}

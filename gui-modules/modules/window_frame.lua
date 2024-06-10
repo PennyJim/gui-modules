@@ -7,23 +7,12 @@ local handler_names = {
 	pin = "window_frame.pin",
 }
 
--- local function config_button(name, handler)
--- 	return frame_action_button(name, "flib_settings", { "gui.flib-settings" }, handler)
--- end
--- local function pin_button(name, handler)
--- 	return frame_action_button(name, "flib_pin", { "gui.flib-keep-open" }, handler)
--- end
--- local function close_button(name, handler)
--- 	return frame_action_button(name, "utility/close", { "gui.close-instruction" }, handler)
--- end
-
 ---@class frameWithButtonsParams
 ---@field name string The name of the root frame
 ---@field title LocalisedString The title of the frame
 ---@field has_pin_button boolean Whether or not to add the pin button
 ---@field has_close_button boolean Whether or not to add the close button
 ---@field children GuiElemDef The element that is contained within the frame
-
 ---@type ModuleParameterDict
 module.parameters = {
 	name = {is_optional = false, type = {"string"}},
@@ -58,10 +47,14 @@ function module.build_func(params)
 								type = "empty-widget", style = "flib_titlebar_drag_handle",
 								ignored_by_interaction = true,
 							},
-							-- params.config_name and config_button(params.config_name, params.config_handler) or {},
+							-- params.has_config_button and {
+							-- 	type = "module", module_type = "frame_action_button",
+							-- 	name = "config_button", tooltip = {"gui.flib-settings"},
+							-- 	sprite = "flib_settings", handler = params.config_handler
+							-- } or {},
 							params.has_pin_button and {
 								type = "module", module_type = "frame_action_button",
-								name = "pin-button", tooltip = {"gui.flib-keep-open"},
+								name = "pin_button", tooltip = {"gui.flib-keep-open"},
 								sprite = "flib_pin", handler = handler_names.pin
 							} or {},
 							params.has_close_button and {

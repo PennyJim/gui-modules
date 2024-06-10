@@ -74,6 +74,7 @@ local function validate_module_params(module, params)
 		for _, valid_type in pairs(acceptable.type) do
 			if type(value) == valid_type then
 				is_valid_type = true
+				break
 			end
 		end
 		if not is_valid_type then

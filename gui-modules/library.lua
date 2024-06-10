@@ -48,6 +48,47 @@ function standard_handlers.toggle(self)
 end
 --#endregion
 
+---Validates the parameters of the module
+---@param module GuiModuleDef
+---@param params table
+local function validate_module_params(module, params)
+	local acceptable_description = module.parameters
+	local missing = table.deepcopy(module.parameters)
+
+	-- Validate each present parameter
+	for key, value in pairs(params) do
+		if key == "type" or key == "module_type" then goto continue end
+		missing[key] = nil -- mark as not missing
+		local acceptable = acceptable_description[key]
+
+		-- Error on extra parameters
+		if not acceptable then
+			error({"library-errors.parameter-extra", module.module_type, key}, 3)
+		end
+
+		local is_valid_type = false
+		for _, valid_type in pairs(acceptable.type) do
+			if type(value) == valid_type then
+				is_valid_type = true
+			end
+		end
+		if not is_valid_type then
+			error({"library-errors.parameter-invalid-type", module.module_type, key, type(value)}, 3)
+		end
+
+		-- Additional parameter checking possible?
+		-- Might grow as the parameters's fields expands
+    ::continue::
+	end
+
+	-- Error for missing required parameters
+	for key, value in pairs(missing) do
+		if not value.is_optional then
+			error({"library-errors.parameter-missing", module.module_type, key}, 3)
+		end
+	end
+end
+
 ---Builds the interface in the namespace for the player
 ---@param player LuaPlayer
 ---@param namespace string

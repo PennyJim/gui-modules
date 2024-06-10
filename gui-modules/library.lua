@@ -28,9 +28,18 @@ local custominput_namespace = {} -- map from custominput event names to namespac
 
 --#region Standard Event Handlers
 
+--- The function called to close the window
+---@param self WindowState
+function standard_handlers.close(self)
+  if self.pinned then
+    return
+  end
+	self.player.opened = nil
+end
+---The function called by closing the window
 ---@param self WindowState
 function standard_handlers.hide(self)
-  self.root.visible = false
+	self.root.visible = false
 end
 ---@param self WindowState
 function standard_handlers.show(self)

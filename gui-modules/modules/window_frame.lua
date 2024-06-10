@@ -4,8 +4,7 @@ local module = {module_type = "window_frame", handlers = {}}
 -- Where custom fields would go
 
 local handler_names = {
-	close = "window_frame:close",
-	pin = "window_frame:pin",
+	pin = "window_frame.pin",
 }
 
 -- local function config_button(name, handler)
@@ -42,7 +41,7 @@ function module.build_func(params)
 	return {
 		type = "frame", name = params.name,
 		visible = false, elem_mods = { auto_center = true },
-		handler = {[defines.events.on_gui_closed] = handler_names.close},
+		handler = {[defines.events.on_gui_closed] = "hide"},
 		children = {
 			{
 				type = "flow", direction = "vertical",
@@ -63,12 +62,12 @@ function module.build_func(params)
 							params.has_pin_button and {
 								type = "module", module_type = "frame_action_button",
 								name = "pin-button", tooltip = {"gui.flib-keep-open"},
-								sprite = "utility/close", handler = handler_names.pin
+								sprite = "flib_pin", handler = handler_names.pin
 							} or {},
 							params.has_close_button and {
 								type = "module", module_type = "frame_action_button",
 								name = "window_close_button", tooltip = {"gui.close-instruction"},
-								sprite = "flib_pin", handler = "hide"
+								sprite = "utility/close", handler = "close"
 							} or {},
 						}
 					},
@@ -83,14 +82,6 @@ function module.build_func(params)
 	}
 end
 
----Handles the window closing
----@param self WindowState.window_frame
-module.handlers[handler_names.close] = function (self)
-  if self.pinned then
-    return
-  end
-	self.player.opened = nil
-end
 ---Handles the pinning of the window
 ---@param self WindowState.window_frame
 module.handlers[handler_names.pin] = function (self)

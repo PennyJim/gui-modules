@@ -17,10 +17,14 @@ do -- Grab the modules from startup settings
 	end
 end
 
----@type {[string]:GuiWindowDef}
-local definitions = {}
----@type {[string]:GuiModuleEventHandlers}
-local namespace_handlers = {}
+---@type {[namespace]:GuiWindowDef}
+local definitions = {} -- the definitions for each namespace
+---@type {[namespace]:GuiModuleEventHandlers}
+local namespace_handlers = {} -- The dictionary of handlers for each namespace
+---@type {[string]:namespace}
+local shortcut_namespace = {} -- map from shortcut names to namespace 
+---@type {[string]:namespace}
+local custominput_namespace = {} -- map from custominput event names to namespace
 
 --#region Standard Event Handlers
 
@@ -170,7 +174,7 @@ function new_namespace(window_def)
 
 	---Adds the handlers to the internal library and registers them with flib
 	---@param new_handlers GuiModuleEventHandlers
-	local function register_handlers(new_handlers)
+	local function register_handlers(new_handlers, shortcut_name, custominput_name)
 		for name, handler in pairs(new_handlers) do
 			if handlers[name] then
 				log({"gui-errors.duplicate-handler-name", name})
@@ -180,8 +184,15 @@ function new_namespace(window_def)
 		-- FIXME: Might require us to prepend the names with the namespace to avoid collisions. Check that before releasing
 		flib_gui.add_handlers(handlers, event_wrapper(namespace))
 		global[namespace].has_registered = true
-	end -- TODO: add options to register shortcut or customkey events
 
+		if shortcut_name then
+			shortcut_namespace[shortcut_name] = namespace
+		end
+		if custominput_name then
+			custominput_namespace[custominput_name] = namespace
+		end
+
+	end
 	return register_handlers
 end
 
@@ -203,37 +214,32 @@ function main.created_player_handler(EventData)
 end
 ---Opens the element of the player that this event sourced from.
 ---Will create a new one if one isn't found
----@param EventData EventData.on_lua_shortcut|EventData.CustomInputEvent
----@param player LuaPlayer?
+---@param EventData EventData.CustomInputEvent
 ---@return boolean? -- The state of the window, if player existed
-function main.toggle_handler(EventData, player)
+---@overload fun(EventData:EventData.on_lua_shortcut,player:LuaPlayer,namespace:namespace):boolean
+function main.custominput_handler(EventData, player, namespace)
+	namespace = namespace or custominput_namespace[EventData.name]
+	if not namespace then return end -- Not one we've been told to handle
 	player = player or game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
-	local self = global.main[player.index]
+	local self = global[namespace][player.index]
 	if not self or not self.root.valid then
-		self = main.create(player)
+		self = build(player, namespace)
 	end
 
 	return standard_handlers.toggle(self)
 end
----Returns a handler for the given shortcut name
----@param shortcut string
----@return fun(e:EventData.on_lua_shortcut)
-function main.shortcut_handler(shortcut)
-	if not shortcut then
-		error({"gui-errors.unknown-shortcut"}, 2)
-	end
-	---Handles the shortcut event
-	---@param EventData EventData.on_lua_shortcut
-	return function(EventData)
-		if EventData.prototype_name == shortcut then
-			local player = game.get_player(EventData.player_index)
-			if not player then return end -- ??
-			local new_state = main.toggle_handler(EventData, player) --[[@as boolean]]
-			player.set_shortcut_toggled(EventData.prototype_name, new_state)
-		end
-	end
+---Handles the custom input events
+---@param EventData EventData.on_lua_shortcut
+function main.shortcut_handler(EventData)
+	local namespace = shortcut_namespace[EventData.prototype_name]
+	if not namespace then return end -- Not one we've been told to handle
+	local player = game.get_player(EventData.player_index)
+	if not player then return end -- ??
+
+	local new_state = main.custominput_handler(EventData, player, namespace)
+	player.set_shortcut_toggled(EventData.prototype_name, new_state)
 end
 -- TODO: add a configuration changed handler that tracks what version of of UI it is
 -- If the version is different, just kill and rebuild the menus

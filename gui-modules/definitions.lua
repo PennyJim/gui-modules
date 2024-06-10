@@ -1,5 +1,7 @@
 ---@meta
 
+---@alias namespace string
+
 ---@class GuiElemModuleDef : GuiElemDef
 ---@field type GuiElementType|"module"
 ---@field children GuiElemModuleDef[]?

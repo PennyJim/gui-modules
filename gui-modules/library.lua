@@ -1,22 +1,34 @@
 ---@type flib_gui
 local flib_gui = require("__flib__.gui-lite")
-local modules = require("__visual-gui-editor__.interface.library")
 local main = {}
-main.handlers = {}
+local standard_handlers = {}
 
----@class WindowState
----@field root LuaGuiElement the root element
----@field elems table<string,LuaGuiElement> the named elements
----@field player LuaPlayer the owner of the window
----@field pinned boolean Whether or not the window has been pinned
+---@type {[string]:GuiModuleDef}
+local modules = {}
+do -- Grab the modules from startup settings
+	local prefix = "gui_module_add_"
+	for name, setting in pairs(settings.startup) do
+		if name:find(prefix) then
+			---@type GuiModuleDef
+			local module = require(setting.value --[[@as string]])
+			modules[module.module_type] = module
+		end
+	end
+end
+
+---@type {[string]:GuiWindowDef}
+local definitions = {}
+---@type {[string]:GuiModuleEventHandlers}
+local namespace_handlers = {}
 
 --#region Standard Event Handlers
+
 ---@param self WindowState
-function main.handlers.hide(self)
+function standard_handlers.hide(self)
   self.root.visible = false
 end
 ---@param self WindowState
-function main.handlers.show(self)
+function standard_handlers.show(self)
 	self.root.visible = true
 	-- Focus something if it should be focused by default
   if not self.pinned then
@@ -25,66 +37,117 @@ function main.handlers.show(self)
 end
 ---@param self WindowState
 ---@return boolean
-function main.handlers.toggle(self)
+function standard_handlers.toggle(self)
 	if self.root.visible then
-		main.handlers.hide(self)
+		standard_handlers.hide(self)
 	else
-		main.handlers.show(self)
+		standard_handlers.show(self)
 	end
 	return self.root.visible
 end
 --#endregion
 
-
----Creates the interface for the player
+---Builds the interface in the namespace for the player
 ---@param player LuaPlayer
----@return WindowState
-function main.create(player)
-	local elems, root = flib_gui.add(player.gui.screen,
-		modules.frame_with_buttons{
-			name = "root-element",
-			title = "TEST",
-			window_closed_handler = main.handlers.window_closed,
-			close_name = "close",
-			close_handler = main.handlers.hide,
-			children = {
-				type = "label",
-				caption = "This is to test that it works :P"
-			}
-		}
-	)
-	---@type WindowState
-	local self = {
-		root = root,
-		elems = elems,
-		player = player,
-		-- Module state variables
-		pinned = false,
-		-- User state varaibles
-	}
-	global.main[player.index] = self
-	return self
-end
-
--- Maybe wrap this with a function for the user to add their own handlers?
--- Might actually *need* to do that
-flib_gui.add_handlers(main.handlers, function (e, handler)
-  local self = global.main[e.player_index]
-  if not self then return end
-
-	if self.root.valid then
-		handler(self, e)
-	else
-		global.main[e.player_index] = nil -- Delete the entry of invalid guis
+---@param namespace string
+function build(player, namespace)
+	local info = definitions[namespace]
+	if not info then
+		error({"library-errors.undefined-namespace"}, 2)
 	end
-end)
+
+	global[namespace][0] = info.version
+	local definition = info.definition
+	for key, value in pairs(t) do
+		
+	end
+end
+-- ---Creates the interface for the player
+-- ---@param player LuaPlayer
+-- ---@return WindowState
+-- function main.create(player)
+-- 	local elems, root = flib_gui.add(player.gui.screen,
+-- 		modules.frame_with_buttons{
+-- 			name = "root-element",
+-- 			title = "TEST",
+-- 			window_closed_handler = standard_handlers.window_closed,
+-- 			close_name = "close",
+-- 			close_handler = standard_handlers.hide,
+-- 			children = {
+-- 				type = "label",
+-- 				caption = "This is to test that it works :P"
+-- 			}
+-- 		}
+-- 	)
+-- 	---@type WindowState
+-- 	local self = {
+-- 		root = root,
+-- 		elems = elems,
+-- 		player = player,
+-- 		-- Module state variables
+-- 		pinned = false,
+-- 		-- User state varaibles
+-- 	}
+-- 	global.main[player.index] = self
+-- 	return self
+-- end
+
+---Creates the wrapper for the namespace
+---@param namespace string
+---@return fun(e,h:fun(self,s,e))
+local function event_wrapper(namespace)
+	return function (e, handler)
+		local self = global[namespace][e.player_index]
+		if not self then return end
+
+		if self.root.valid then
+			handler(self, namespace, e)
+		else
+			-- Delete the entry of an invalid gui
+			global[namespace][e.player_index] = nil
+		end
+	end
+end
 flib_gui.handle_events()
 
---#region Public Event Handlers
+
+---Creates a new namespace with the window definition
+---@param window_def GuiWindowDef
+---@return fun()
+function new_namespace(window_def)
+	local namespace = window_def.namespace
+	definitions[namespace] = window_def
+
+	---@type GuiModuleEventHandlers
+	local handlers = {
+		["hide"] = standard_handlers.hide,
+		["show"] = standard_handlers.show,
+		["toggle"] = standard_handlers.toggle,
+	}
+	namespace_handlers[namespace] = handlers
+
+	---Adds the handlers to the internal library and registers them with flib
+	---@param new_handlers GuiModuleEventHandlers
+	local function register_handlers(new_handlers)
+		for name, handler in pairs(new_handlers) do
+			if handlers[name] then
+				log({"library-errors.duplicate-handler-name", name})
+			end
+			handlers[name] = handler
+		end
+		-- FIXME: Might require us to prepend the names with the namespace to avoid collisions. Check that before releasing
+		flib_gui.add_handlers(handlers, event_wrapper(namespace))
+		global[namespace].has_registered = true
+	end -- TODO: add options to register shortcut or customkey events
+
+	return register_handlers
+end
 
 ---Initialization
 function main.init()
-	global.main = global.main or {}
+	for name_space in pairs(definitions) do
+		global[name_space] = global[name_space] or {}
+	end
 end
 ---Handles the events of new players
 ---@param EventData EventData.on_player_created
@@ -92,7 +155,9 @@ function main.created_player_handler(EventData)
 	local player = game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
-	main.create(player)
+	for name_space in pairs(definitions) do
+		build(player, name_space)
+	end
 end
 ---Opens the element of the player that this event sourced from.
 ---Will create a new one if one isn't found
@@ -108,7 +173,7 @@ function main.toggle_handler(EventData, player)
 		self = main.create(player)
 	end
 
-	return main.handlers.toggle(self)
+	return standard_handlers.toggle(self)
 end
 ---Returns a handler for the given shortcut name
 ---@param shortcut string
@@ -130,5 +195,5 @@ function main.shortcut_handler(shortcut)
 end
 -- TODO: add a configuration changed handler that tracks what version of of UI it is
 -- If the version is different, just kill and rebuild the menus
---#endregion
+
 return main

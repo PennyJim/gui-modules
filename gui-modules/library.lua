@@ -164,7 +164,7 @@ flib_gui.handle_events()
 
 ---Creates a new namespace with the window definition
 ---@param window_def GuiWindowDef
----@return fun()
+---@return fun(h:GuiModuleEventHandlers,s:string,c:string)
 function new_namespace(window_def)
 	local namespace = window_def.namespace
 	definitions[namespace] = window_def
@@ -181,6 +181,8 @@ function new_namespace(window_def)
 
 	---Adds the handlers to the internal library and registers them with flib
 	---@param new_handlers GuiModuleEventHandlers
+	---@param shortcut_name string
+	---@param custominput_name string
 	local function register_handlers(new_handlers, shortcut_name, custominput_name)
 		for name, handler in pairs(new_handlers) do
 			if handlers[name] then
@@ -248,6 +250,7 @@ end
 
 --- HACK: register these events in a way that's not overwrittable
 script.on_event("visual-editor", main.toggle_handler)
+script.on_event("visual-editor", main.custominput_handler)
 script.on_event(defines.events.on_lua_shortcut, main.shortcut_handler)
 script.on_event(defines.events.on_player_created, main.created_player_handler)
 

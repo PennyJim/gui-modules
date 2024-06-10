@@ -1,4 +1,4 @@
-local main_gui = require("__gui-modules__.library"){
+require("__gui-modules__.library"){
 	namespace = "testing",
 	version = 0,
 	root = "screen",
@@ -16,4 +16,6 @@ local main_gui = require("__gui-modules__.library"){
 			}
 		}
 	}
-}
+}({
+	-- other Handlers go here
+},"visual-editor", "visual-editor")

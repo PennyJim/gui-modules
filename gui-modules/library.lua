@@ -190,7 +190,9 @@ function new_namespace(window_def)
 		end
 		-- FIXME: Might require us to prepend the names with the namespace to avoid collisions. Check that before releasing
 		flib_gui.add_handlers(handlers, event_wrapper(namespace))
-		global[namespace].has_registered = true
+		resolve_handlers(window_def.definition, handlers)
+		global[namespace] = global[namespace] or {}
+		global[namespace][0] = window_def.version
 
 		if shortcut_name then
 			shortcut_namespace[shortcut_name] = namespace
@@ -203,13 +205,6 @@ function new_namespace(window_def)
 	return register_handlers
 end
 
----Initialization
-function main.init()
-	for namespace, info in pairs(definitions) do
-		global[namespace] = global[namespace] or {}
-		global[namespace][0] = global[namespace][0] or info.version
-	end
-end
 ---Handles the events of new players
 ---@param EventData EventData.on_player_created
 function main.created_player_handler(EventData)
@@ -226,7 +221,7 @@ end
 ---@return boolean? -- The state of the window, if player existed
 ---@overload fun(EventData:EventData.on_lua_shortcut,player:LuaPlayer,namespace:namespace):boolean
 function main.custominput_handler(EventData, player, namespace)
-	namespace = namespace or custominput_namespace[EventData.name]
+	namespace = namespace or custominput_namespace[EventData.input_name]
 	if not namespace then return end -- Not one we've been told to handle
 	player = player or game.get_player(EventData.player_index)
 	if not player then return end -- ??
@@ -249,11 +244,9 @@ function main.shortcut_handler(EventData)
 	local new_state = main.custominput_handler(EventData, player, namespace)
 	player.set_shortcut_toggled(EventData.prototype_name, new_state)
 end
--- TODO: add a configuration changed handler that tracks what version of of UI it is
 -- If the version is different, just kill and rebuild the menus
 
 --- HACK: register these events in a way that's not overwrittable
-script.on_init(main.init)
 script.on_event("visual-editor", main.toggle_handler)
 script.on_event(defines.events.on_lua_shortcut, main.shortcut_handler)
 script.on_event(defines.events.on_player_created, main.created_player_handler)

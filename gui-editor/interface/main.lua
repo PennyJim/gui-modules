@@ -102,7 +102,7 @@ gui.new{
 			children = {
 				{
 					type = "module", module_type = "editable_label",
-					default_caption = "<unamed label>"
+					default_caption = "<unamed label>", confirm_handler = "test_handler"
 				} --[[@as EditableLabelDef]]
 			}
 		} --[[@as WindowFrameButtonsDef]]

@@ -15,10 +15,11 @@ local handler_names = {
 	unfocus = "editable_label.unfocus",
 }
 
----@class editableLabelDef : ModuleDef
+---@class EditableLabelDef : ModuleDef
+---@field module_type "editable_label"
+-- where LuaLS parameter definitons go
 ---@field default_caption LocalisedString
 ---@field confirm_handler string?
--- where LuaLS parameter definitons go
 ---@type ModuleParameterDict
 module.parameters = {
 	-- Where gui-modules parameter definitons go
@@ -27,7 +28,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params editableLabelDef
+---@param params EditableLabelDef
 ---@return GuiElemDef
 function module.build_func(params)
 	return {
@@ -60,7 +61,7 @@ end
 
 ---Handles someone starting to rename their label
 ---@param self WindowState.editable_label
----@param namespace string
+---@param namespace namespace
 ---@param EventData GuiEventData
 module.handlers[handler_names.edit_button] = function (self, namespace, EventData)
 	local module = EventData.element.parent --[[@as LuaGuiElement]]
@@ -81,7 +82,7 @@ end
 
 ---Handles someone confirming their renaming of the label
 ---@param self WindowState.editable_label
----@param namespace string
+---@param namespace namespace
 ---@param EventData GuiEventData
 module.handlers[handler_names.confirm] = function (self, namespace, EventData)
 	local module = EventData.element.parent --[[@as LuaGuiElement]]
@@ -102,7 +103,7 @@ module.handlers[handler_names.confirm] = function (self, namespace, EventData)
 end
 ---Handles someone canceling their renaming of the label
 ---@param self WindowState.editable_label
----@param namespace string
+---@param namespace namespace
 ---@param EventData GuiEventData
 module.handlers[handler_names.cancel] = function (self, namespace, EventData)
 	if not self.is_cancelable_focus then return end
@@ -123,7 +124,7 @@ module.handlers[handler_names.cancel] = function (self, namespace, EventData)
 	return nil, handler_names.unfocus
 end
 ---@param self WindowState.editable_label
----@param namespace string
+---@param namespace namespace
 ---@param EventData GuiEventData
 module.handlers[handler_names.focus] = function (self, namespace, EventData)
 	local module = EventData.element.parent --[[@as LuaGuiElement]]
@@ -135,7 +136,7 @@ module.handlers[handler_names.focus] = function (self, namespace, EventData)
 	self.player.opened = textfield
 end
 ---@param self WindowState.editable_label
----@param namespace string
+---@param namespace namespace
 ---@param EventData GuiEventData
 module.handlers[handler_names.unfocus] = function (self, namespace, EventData)
 	self.pinned = self.was_pinned

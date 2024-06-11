@@ -9,6 +9,7 @@ local handler_names = {
 }
 
 ---@class SplitPaneModuleDef : ModuleDef
+---@field module_type "split_pane"
 -- where LuaLS parameter definitons go
 ---@field number_of_panes integer
 ---@field direction "horizontal"|"vertical"

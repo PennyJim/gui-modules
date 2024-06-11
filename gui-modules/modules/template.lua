@@ -9,6 +9,7 @@ local handler_names = {
 }
 
 ---@class myModuleParams : ModuleDef
+---@field module_type "my_module"
 -- where LuaLS parameter definitons go
 ---@type ModuleParameterDict
 module.parameters = {
@@ -25,6 +26,8 @@ end
 
 -- How to define handlers
 -- ---@param self WindowState.my_module
+-- ---@param namespace namespace
+-- ---@param EventData GuiEventData
 -- module.handlers[handler_names.my_handler] = function (self)
 -- 	-- Do stuff
 -- end

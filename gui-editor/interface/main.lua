@@ -24,6 +24,7 @@ require("__gui-modules__.gui").new{
 						{
 							type = "module", module_type = "split_pane",
 							number_of_panes = 5, direction = "vertical",
+							stretch_panes = true,
 							panes = {
 								filler_child,
 								filler_child,
@@ -35,6 +36,7 @@ require("__gui-modules__.gui").new{
 						{
 							type = "module", module_type = "split_pane",
 							number_of_panes = 3, direction = "vertical",
+							stretch_panes = true,
 							panes = {
 								filler_child,
 								filler_child,

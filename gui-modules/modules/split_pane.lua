@@ -14,13 +14,15 @@ local handler_names = {
 ---@field direction "horizontal"|"vertical"
 ---@field panes GuiElemModuleDef[]
 ---@field frame_styles string[]|string
+---@field stretch_panes boolean?
 ---@type ModuleParameterDict
 module.parameters = {
 	-- Where gui-modules parameter definitons go
 	number_of_panes = {is_optional = false, type = {"number"}},
 	direction = {is_optional = false, type = {"string"}, enum = {"horizontal", "vertical"}},
 	panes = {is_optional = false, type = {"table"}},
-	frame_styles = {is_optional = true, type = {"string", "table"}}
+	frame_styles = {is_optional = true, type = {"string", "table"}},
+	stretch_panes = {is_optional = true, type = {"boolean"}},
 }
 
 ---Creates the frame for a window with an exit button
@@ -40,9 +42,12 @@ function module.build_func(params)
 	end
 
 	local children = {}
+	---@type LuaStyle?
+	local child_style_mod = params.stretch_panes and {[params.direction.."ly_stretchable"] = true} or nil
 	for i = 1, panes, 1 do
 		children[i] = {
 			type = "frame", style = style or styles[i],
+			style_mods = child_style_mod,
 			children = {pane_contents[i]}
 		} --[[@as GuiElemModuleDef]]
 	end

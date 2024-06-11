@@ -96,12 +96,16 @@ module.handlers[handler_names.pin] = function (self)
     self.elems.pin_button.sprite = "flib_pin_black"
     self.elems.pin_button.style = "flib_selected_frame_action_button"
     if self.player.opened == self.root then
+			self.pinning = true
       self.player.opened = nil
     end
   else
     self.elems.window_close_button.tooltip = { "gui.close-instruction" }
     self.elems.pin_button.sprite = "flib_pin_white"
     self.elems.pin_button.style = "frame_action_button"
+		if self.opened and self.player.opened == self.opened then
+			self.pinning = true
+		end
     self.player.opened = self.root
   end
 end

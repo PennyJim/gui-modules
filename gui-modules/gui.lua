@@ -37,8 +37,17 @@ local custominput_namespace = {} -- map from custominput event names to namespac
 --- The function called to close the window
 ---@param self WindowState
 function standard_handlers.close(self)
-  if self.pinned then
-    return
+	if self.pinning then
+		self.pinning = nil
+		self.player.opened = self.opened
+		return
+	elseif self.opened then
+		if self.player.opened then
+			standard_handlers.hide(self)
+		else
+			self.player.opened = self.root
+		end
+		return self.opened, defines.events.on_gui_closed
   end
 	standard_handlers.hide(self)
 end

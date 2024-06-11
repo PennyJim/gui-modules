@@ -39,4 +39,6 @@
 ---@field elems table<string,LuaGuiElement> the named elements
 ---@field player LuaPlayer the owner of the window
 ---@field pinned boolean Whether or not the window has been pinned
+---@field pinning boolean? Whether or not to pass the close event to an opened subelement
 ---@field shortcut string? The registered shortcut for the window
+---@field opened LuaGuiElement? Should be set when subelements are opened. So the main element can close them instead

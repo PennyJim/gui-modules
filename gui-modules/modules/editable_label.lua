@@ -2,8 +2,6 @@ local module = {module_type = "editable_label", handlers = {} --[[@as GuiModuleE
 
 ---@class WindowState.editable_label : WindowState
 -- Where custom fields would go
----@field was_pinned boolean? Whether or not the window was pinned before focus
----@field is_cancelable_focus boolean?
 
 local handler_names = {
 	-- A generic place to make sure handler names match
@@ -95,12 +93,16 @@ module.handlers[handler_names.confirm] = function (self, elem)
 	label.visible = true
 	textfield.visible = false
 	button.tooltip = {"gui-edit-label.edit-label"}
+	self.opened = nil
 	return label
 end
 ---@param self WindowState.editable_label
 ---@param elem LuaGuiElement
 module.handlers[handler_names.cancel] = function (self, elem)
-	if not self.is_cancelable_focus then return end
+	if self.pinning then
+		self.pinning = nil
+		return
+	end
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
 	local textfield = module.children[2]
@@ -123,17 +125,14 @@ module.handlers[handler_names.focus] = function (self, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local textfield = module.children[2]
 
-	self.was_pinned = self.pinned
-	self.pinned = true
-	self.is_cancelable_focus = true
-	self.player.opened = textfield
+	self.opened = textfield
+	if not self.player.opened then
+		self.player.opened = textfield
+	end
 end
 ---@param self WindowState.editable_label
 module.handlers[handler_names.unfocus] = function (self)
-	self.pinned = self.was_pinned
-	self.player.opened = self.pinned and nil or self.root
-	self.was_pinned = nil
-	self.is_cancelable_focus = nil
+	self.opened = nil
 end
 
 return module --[[@as GuiModuleDef]]

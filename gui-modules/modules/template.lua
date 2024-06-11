@@ -1,4 +1,4 @@
-local module = {module_type = "my_module", handlers = {}}
+local module = {module_type = "my_module", handlers = {} --[[@as GuiModuleEventHandlers]]}
 
 ---@class WindowState.my_module : WindowState
 -- Where custom fields would go
@@ -27,9 +27,6 @@ end
 
 -- How to define handlers
 ---@param self WindowState.editable_label
----@param elem LuaGuiElement
----@param OriginalEvent GuiEventData
----@param namespace namespace
 module.handlers[handler_names.my_handler] = function (self, elem, OriginalEvent, namespace)
 	-- Do stuff
 end

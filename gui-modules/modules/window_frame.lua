@@ -1,4 +1,4 @@
-local module = {module_type = "window_frame", handlers = {}}
+local module = {module_type = "window_frame", handlers = {} --[[@as GuiModuleEventHandlers]]}
 
 ---@class WindowState.window_frame : WindowState
 -- Where custom fields would go

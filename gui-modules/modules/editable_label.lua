@@ -66,7 +66,6 @@ function module.build_func(params)
 end
 
 ---@param self WindowState.editable_label
----@param elem LuaGuiElement
 module.handlers[handler_names.edit_button] = function (self, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
@@ -85,7 +84,6 @@ module.handlers[handler_names.edit_button] = function (self, elem)
 end
 
 ---@param self WindowState.editable_label
----@param elem LuaGuiElement
 module.handlers[handler_names.confirm] = function (self, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
@@ -105,7 +103,6 @@ module.handlers[handler_names.confirm] = function (self, elem)
 	return label, defines.events.on_gui_confirmed
 end
 ---@param self WindowState.editable_label
----@param elem LuaGuiElement
 module.handlers[handler_names.cancel] = function (self, elem)
 	if self.pinning then
 		self.pinning = nil
@@ -128,7 +125,6 @@ module.handlers[handler_names.cancel] = function (self, elem)
 	return nil, handler_names.unfocus
 end
 ---@param self WindowState.editable_label
----@param elem LuaGuiElement
 module.handlers[handler_names.focus] = function (self, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local textfield = module.children[2]

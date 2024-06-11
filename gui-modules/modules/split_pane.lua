@@ -1,4 +1,4 @@
-local module = {module_type = "split_pane", handlers = {}}
+local module = {module_type = "split_pane", handlers = {} --[[@as GuiModuleEventHandlers]]}
 
 ---@class WindowState.my_module : WindowState
 -- Where custom fields would go

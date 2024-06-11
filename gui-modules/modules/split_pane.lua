@@ -13,7 +13,7 @@ local handler_names = {
 ---@field number_of_panes integer
 ---@field direction "horizontal"|"vertical"
 ---@field panes GuiElemModuleDef[]
----@field frame_styles string[]|string
+---@field frame_styles string[]|string?
 ---@field stretch_panes boolean?
 ---@type ModuleParameterDict
 module.parameters = {
@@ -43,7 +43,10 @@ function module.build_func(params)
 
 	local children = {}
 	---@type LuaStyle?
-	local child_style_mod = params.stretch_panes and {[params.direction.."ly_stretchable"] = true} or nil
+	local child_style_mod 
+	if params.stretch_panes ~= nil then
+		child_style_mod = {[params.direction.."ly_stretchable"] = params.stretch_panes}
+	end
 	for i = 1, panes, 1 do
 		children[i] = {
 			type = "frame", style = style or styles[i],

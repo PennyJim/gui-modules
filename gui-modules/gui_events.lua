@@ -11,12 +11,34 @@ local function event_wrapper(namespace, handler, e)
 	local self = global[namespace][e.player_index]
 	if not self then return end
 
-	if self.root.valid then
-		handler(self, namespace, e)
-	else
+	if not self.root.valid then
 		-- Delete the entry of an invalid gui
 		global[namespace][e.player_index] = nil
+		return
 	end
+
+	local new_elem, new_event = handler(self, namespace, e)
+	if new_elem or new_event then
+		new_elem = new_elem or e.element --[[@as LuaGuiElement]]
+		gui_events.dispatch_specific(new_elem or e.element, new_event, e)
+	end
+end
+---Dispatches an event to a specific element
+---@param elem LuaGuiElement
+---@param event defines.events?
+---@param e GuiEventData
+function gui_events.dispatch_specific(elem, event, e)
+  local handler_name = elem.tags[tag_key] --[[@as GuiModuleEventHandlerNames?]]
+	if type(handler_name) == "table" then
+		handler_name = handler_name[tostring(event or e.name)]
+	end
+  if not handler_name then
+    return false
+  end
+
+	local handler = handlers[handler_name]
+	local namespace = handler_name:match("^[^/]+")
+	event_wrapper(namespace, handler, e)
 end
 ---Handles all GUI events and passes them to the appropriate wrapper function and handler
 ---@param e GuiEventData

@@ -47,7 +47,7 @@ end
 function standard_handlers.hide(self)
 	if self.player.opened == self.root then
 		self.player.opened = nil -- Clear it from opened if hidden while still opened
-		return
+		return -- Return because it'll call close, which calls hide again
 	end
 	self.root.visible = false
 	if self.shortcut then -- Update registred shortcut

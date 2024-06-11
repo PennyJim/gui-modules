@@ -6,6 +6,7 @@ local module = {module_type = "my_module", handlers = {}}
 local handler_names = {
 	-- A generic place to make sure handler names match
 	-- in both handler definitons and in the build_func
+	my_handler = "my_module.my_handler" -- Standardly prepended with module name to avoid naming collisions
 }
 
 ---@class myModuleParams : ModuleDef
@@ -14,7 +15,7 @@ local handler_names = {
 ---@type ModuleParameterDict
 module.parameters = {
 	-- Where gui-modules parameter definitons go
-	-- = {is_optional = false, type = {"string","table"}},
+	my_parameter = {is_optional = false, type = {"string","table"}},
 }
 
 ---Creates the frame for a window with an exit button
@@ -25,11 +26,12 @@ function module.build_func(params)
 end
 
 -- How to define handlers
--- ---@param self WindowState.my_module
--- ---@param namespace namespace
--- ---@param EventData GuiEventData
--- module.handlers[handler_names.my_handler] = function (self)
--- 	-- Do stuff
--- end
+---@param self WindowState.editable_label
+---@param elem LuaGuiElement
+---@param OriginalEvent GuiEventData
+---@param namespace namespace
+module.handlers[handler_names.my_handler] = function (self, elem, OriginalEvent, namespace)
+	-- Do stuff
+end
 
 return module --[[@as GuiModuleDef]]

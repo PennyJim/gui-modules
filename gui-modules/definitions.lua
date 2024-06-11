@@ -16,8 +16,8 @@
 ---@field custominput string?
 ---@field shortcut string?
 
----@alias GuiModuleEventHandler fun(self:WindowState,namespace:string,event:GuiEventData):LuaGuiElement?,defines.events?
----@alias GuiModuleEventHandlers table<defines.events, GuiModuleEventHandler>
+---@alias GuiModuleEventHandler fun(self:WindowState,elem:LuaGuiElement,event:GuiEventData,namespace:string):LuaGuiElement?,any?
+---@alias GuiModuleEventHandlers table<any, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlerNames string|table<defines.events,string>
 

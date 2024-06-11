@@ -6,8 +6,9 @@ local tag_key = "__"..script.mod_name.."_handler"
 ---Creates the wrapper for the namespace
 ---@param namespace string
 ---@param handler GuiModuleEventHandler
+---@param elem LuaGuiElement
 ---@param e GuiEventData
-local function event_wrapper(namespace, handler, e)
+local function event_wrapper(namespace, handler, elem, e)
 	local self = global[namespace][e.player_index]
 	if not self then return end
 
@@ -17,10 +18,10 @@ local function event_wrapper(namespace, handler, e)
 		return
 	end
 
-	local new_elem, new_event = handler(self, namespace, e)
+	local new_elem, new_event = handler(self, elem, e, namespace)
 	if new_elem or new_event then
-		new_elem = new_elem or e.element --[[@as LuaGuiElement]]
-		gui_events.dispatch_specific(new_elem or e.element, new_event, e)
+		new_elem = new_elem or elem
+		gui_events.dispatch_specific(new_elem, new_event, e)
 	end
 end
 ---Dispatches an event to a specific element
@@ -38,7 +39,7 @@ function gui_events.dispatch_specific(elem, event, e)
 
 	local handler = handlers[handler_name]
 	local namespace = handler_name:match("^[^/]+")
-	event_wrapper(namespace, handler, e)
+	event_wrapper(namespace, handler, elem, e)
 end
 ---Handles all GUI events and passes them to the appropriate wrapper function and handler
 ---@param e GuiEventData
@@ -56,7 +57,7 @@ function gui_events.dispatch_event(e)
 
 	local handler = handlers[handler_name]
 	local namespace = handler_name:match("^[^/]+")
-	event_wrapper(namespace, handler, e)
+	event_wrapper(namespace, handler, elem, e)
 end
 
 --- Add the given handler functions to the lookup with their given names

@@ -1,4 +1,4 @@
-local module = {module_type = "editable_label", handlers = {}}
+local module = {module_type = "editable_label", handlers = {} --[[@as GuiModuleEventHandlers]]}
 
 ---@class WindowState.editable_label : WindowState
 -- Where custom fields would go
@@ -59,12 +59,10 @@ function module.build_func(params)
 	} --[[@as GuiElemModuleDef]]
 end
 
----Handles someone starting to rename their label
 ---@param self WindowState.editable_label
----@param namespace namespace
----@param EventData GuiEventData
-module.handlers[handler_names.edit_button] = function (self, namespace, EventData)
-	local module = EventData.element.parent --[[@as LuaGuiElement]]
+---@param elem LuaGuiElement
+module.handlers[handler_names.edit_button] = function (self, elem)
+	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
 	local textfield = module.children[2]
 	local button = module.children[3]
@@ -80,12 +78,10 @@ module.handlers[handler_names.edit_button] = function (self, namespace, EventDat
 	end
 end
 
----Handles someone confirming their renaming of the label
 ---@param self WindowState.editable_label
----@param namespace namespace
----@param EventData GuiEventData
-module.handlers[handler_names.confirm] = function (self, namespace, EventData)
-	local module = EventData.element.parent --[[@as LuaGuiElement]]
+---@param elem LuaGuiElement
+module.handlers[handler_names.confirm] = function (self, elem)
+	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
 	local textfield = module.children[2]
 	local button = module.children[3]
@@ -101,13 +97,11 @@ module.handlers[handler_names.confirm] = function (self, namespace, EventData)
 	button.tooltip = {"gui-edit-label.edit-label"}
 	return label
 end
----Handles someone canceling their renaming of the label
 ---@param self WindowState.editable_label
----@param namespace namespace
----@param EventData GuiEventData
-module.handlers[handler_names.cancel] = function (self, namespace, EventData)
+---@param elem LuaGuiElement
+module.handlers[handler_names.cancel] = function (self, elem)
 	if not self.is_cancelable_focus then return end
-	local module = EventData.element.parent --[[@as LuaGuiElement]]
+	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
 	local textfield = module.children[2]
 	local button = module.children[3]
@@ -124,10 +118,9 @@ module.handlers[handler_names.cancel] = function (self, namespace, EventData)
 	return nil, handler_names.unfocus
 end
 ---@param self WindowState.editable_label
----@param namespace namespace
----@param EventData GuiEventData
-module.handlers[handler_names.focus] = function (self, namespace, EventData)
-	local module = EventData.element.parent --[[@as LuaGuiElement]]
+---@param elem LuaGuiElement
+module.handlers[handler_names.focus] = function (self, elem)
+	local module = elem.parent --[[@as LuaGuiElement]]
 	local textfield = module.children[2]
 
 	self.was_pinned = self.pinned
@@ -136,9 +129,7 @@ module.handlers[handler_names.focus] = function (self, namespace, EventData)
 	self.player.opened = textfield
 end
 ---@param self WindowState.editable_label
----@param namespace namespace
----@param EventData GuiEventData
-module.handlers[handler_names.unfocus] = function (self, namespace, EventData)
+module.handlers[handler_names.unfocus] = function (self)
 	self.pinned = self.was_pinned
 	self.player.opened = self.pinned and nil or self.root
 	self.was_pinned = nil

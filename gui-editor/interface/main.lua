@@ -32,7 +32,7 @@ require("__gui-modules__.gui").new{
 			type = "module",
 			module_type = "window_frame",
 			name = "testing", title = "Testing",
-			has_close_button = true,
+			has_close_button = true, has_pin_button = true,
 			children = {
 				{
 					type = "module", module_type = "split_pane",
@@ -62,7 +62,7 @@ require("__gui-modules__.gui").new{
 					}
 				} --[[@as SplitPaneModuleParams]]
 			}
-		}
+		} --[[@as WindowFrameButtonsParams]]
 	}
 }--[[@as GuiWindowDef]]{
 	-- other Handlers go here

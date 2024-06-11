@@ -40,11 +40,15 @@ function standard_handlers.close(self)
   if self.pinned then
     return
   end
-	self.player.opened = nil
+	standard_handlers.hide(self)
 end
 ---The function called by closing the window
 ---@param self WindowState
 function standard_handlers.hide(self)
+	if self.player.opened == self.root then
+		self.player.opened = nil -- Clear it from opened if hidden while still opened
+		return
+	end
 	self.root.visible = false
 	if self.shortcut then -- Update registred shortcut
 		self.player.set_shortcut_toggled(self.shortcut, false)

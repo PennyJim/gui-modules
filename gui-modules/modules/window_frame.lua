@@ -10,8 +10,8 @@ local handler_names = {
 ---@class WindowFrameButtonsParams : ModuleParams
 ---@field name string The name of the root frame
 ---@field title LocalisedString The title of the frame
----@field has_pin_button boolean Whether or not to add the pin button
----@field has_close_button boolean Whether or not to add the close button
+---@field has_pin_button boolean? Whether or not to add the pin button
+---@field has_close_button boolean? Whether or not to add the close button
 ---@field children GuiElemDef The element that is contained within the frame
 ---@type ModuleParameterDict
 module.parameters = {
@@ -29,8 +29,9 @@ module.parameters = {
 function module.build_func(params)
 	return {
 		type = "frame", name = params.name,
+---@diagnostic disable-next-line: missing-fields
 		visible = false, elem_mods = { auto_center = true },
-		handler = {[defines.events.on_gui_closed] = "hide"},
+		handler = {[defines.events.on_gui_closed] = "close"},
 		children = {
 			{
 				type = "flow", direction = "vertical",
@@ -60,7 +61,7 @@ function module.build_func(params)
 							params.has_close_button and {
 								type = "module", module_type = "frame_action_button",
 								name = "window_close_button", tooltip = {"gui.close-instruction"},
-								sprite = "utility/close", handler = "close"
+								sprite = "utility/close", handler = "hide"
 							} or {},
 						}
 					},
@@ -72,7 +73,7 @@ function module.build_func(params)
 				}
 			}
 		}
-	}
+	} --[[@as GuiElemModuleDef]]
 end
 
 ---Handles the pinning of the window
@@ -80,17 +81,17 @@ end
 module.handlers[handler_names.pin] = function (self)
   self.pinned = not self.pinned
   if self.pinned then
-    self.elems.close_button.tooltip = { "gui.close" }
+    self.elems.window_close_button.tooltip = { "gui.close" }
     self.elems.pin_button.sprite = "flib_pin_black"
     self.elems.pin_button.style = "flib_selected_frame_action_button"
-    if self.player.opened == self.elems.flib_todo_window then
+    if self.player.opened == self.root then
       self.player.opened = nil
     end
   else
-    self.elems.close_button.tooltip = { "gui.close-instruction" }
+    self.elems.window_close_button.tooltip = { "gui.close-instruction" }
     self.elems.pin_button.sprite = "flib_pin_white"
     self.elems.pin_button.style = "frame_action_button"
-    self.player.opened = self.elems.flib_todo_window
+    self.player.opened = self.root
   end
 end
 

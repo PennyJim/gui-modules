@@ -13,6 +13,7 @@ local handler_names = {
 ---@field title LocalisedString The title of the frame
 ---@field has_pin_button boolean? Whether or not to add the pin button
 ---@field has_close_button boolean? Whether or not to add the close button
+---@field draggable boolean?
 ---@field children GuiElemDef The element that is contained within the frame
 ---@field style string? The style of the root frame
 ---@field style_mods LuaStyle? Modifications to the style of the root frame
@@ -23,6 +24,7 @@ module.parameters = {
 	-- has_config_button = "boolean", -- TODO: add the necessary fields or split off into a separate module
 	has_pin_button = {is_optional = true, type = {"boolean"}},
 	has_close_button = {is_optional = true, type = {"boolean"}},
+	draggable = {is_optional = true, type = {"boolean"}},
 	children = {is_optional = false, type = {"table"}},
 	style = {is_optional = true, type = {"string"}},
 	style_mods = {is_optional = true, type = {"table"}},
@@ -32,6 +34,7 @@ module.parameters = {
 ---@param params WindowFrameButtonsParams
 ---@return GuiElemDef
 function module.build_func(params)
+	params.draggable = params.draggable ~= false
 	return {
 		type = "frame", name = params.name,
 ---@diagnostic disable-next-line: missing-fields
@@ -44,14 +47,14 @@ function module.build_func(params)
 				children = {
 					{ -- The titlebar
 						type = "flow", style = "flib_titlebar_flow",
-						direction = "horizontal", drag_target = params.name,
+						direction = "horizontal", drag_target = params.draggable and params.name or nil,
 						children = {
 							{ -- Title
 								type = "label", style = "frame_title",
 								caption = params.title, ignored_by_interaction = true
 							},
 							{ -- Drag handle
-								type = "empty-widget", style = "flib_titlebar_drag_handle",
+								type = "empty-widget", style = params.draggable and "flib_titlebar_drag_handle" or "flib_horizontal_pusher",
 								ignored_by_interaction = true,
 							},
 							-- params.has_config_button and { -- Config button

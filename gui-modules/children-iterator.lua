@@ -31,7 +31,6 @@ end
 ---@field currentParent GuiElemModuleDef
 ---@field currentParentIndex integer?
 ---@field nextParents GuiElemModuleDef[]
----
 
 ---Iterates over GuiElemModuleDef, returning each child
 ---@param s ChildrenIteratorState
@@ -39,17 +38,16 @@ end
 ---@return integer? index where in that array the child is
 ---@return GuiElemModuleDef? child
 local function iterator(s)
-	if s.currentIndex then
-		-- Add the next children to the list *after* whatever's
-		-- using this iterator can affect the returned child
-		combine(s.nextParents, s.currentChildren)
-	end
 	local child
 	repeat
 		repeat -- ignore non-array indexes
 			s.currentIndex, child = next(s.currentChildren, s.currentIndex)
 		until type(s.currentIndex) == "number" or type(s.currentIndex) == "nil"
 		if not s.currentIndex then
+			-- Done with the currentChildren
+			-- Add them to the next parents
+			combine(s.nextParents, s.currentChildren)
+
 			-- Set the current parent to the next in the list
 			repeat -- ignore non-array indexes
 				s.currentParentIndex, s.currentParent = next(s.nextParents, s.currentParentIndex)

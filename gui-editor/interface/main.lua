@@ -1,10 +1,18 @@
+local gui = require("__gui-modules__.gui")
+
 ---@type GuiElemModuleDef
 local filler_child = {
 	type = "label", caption = "Filler",
 	style_mods = {height = 400, width = 100}
 }--[[@as GuiElemModuleDef]]
+local test_handlers = {
+	test_handler = function ()
+		game.print("TEST!!")
+	end
+	-- other Handlers go here
+}
 
-require("__gui-modules__.gui").new{
+local visual_editor = {
 	namespace = "testing", version = 0,
 	shortcut = "visual-editor", custominput = "visual-editor",
 	root = "screen",
@@ -12,7 +20,7 @@ require("__gui-modules__.gui").new{
 		{
 			type = "module",
 			module_type = "window_frame",
-			name = "testing", title = "Testing",
+			name = "testing", title = "GUI Editor",
 			has_close_button = true, draggable = false,
 ---@diagnostic disable-next-line: missing-fields
 			style_mods = {natural_height = 10000, natural_width = 10000},
@@ -36,11 +44,9 @@ require("__gui-modules__.gui").new{
 									type = "frame", style = "subheader_frame",
 									children = {
 										{
-											-- type = "label",
-											-- caption = "Root"
 											type = "module", module_type = "editable_label",
 											default_caption = "Root", confirm_handler = "test_handler"
-										} --[[@as editableLabelDef]],
+										} --[[@as EditableLabelDef]],
 										{
 											type = "empty-widget", style = "flib_horizontal_pusher"
 										}
@@ -80,9 +86,25 @@ require("__gui-modules__.gui").new{
 			}
 		} --[[@as WindowFrameButtonsDef]]
 	}
-}--[[@as GuiWindowDef]]{
-	test_handler = function ()
-		game.print("TEST!!")
-	end
-	-- other Handlers go here
-}
+}--[[@as GuiWindowDef]]
+
+
+-- gui.new(visual_editor)(test_handlers)
+gui.new{
+	namespace = "testing", version = 0,
+	shortcut = "visual-editor", custominput = "visual-editor",
+	root = "screen",
+	definition = {
+		{
+			type = "module", module_type = "window_frame",
+			name = "testing", title = "Testing",
+			has_close_button = true, has_pin_button = true,
+			children = {
+				{
+					type = "module", module_type = "editable_label",
+					default_caption = "<unamed label>"
+				} --[[@as EditableLabelDef]]
+			}
+		} --[[@as WindowFrameButtonsDef]]
+	}
+}(test_handlers)

@@ -6,6 +6,7 @@ local module = {module_type = "window_frame", handlers = {}}
 local handler_names = {
 	pin = "window_frame.pin",
 }
+-- FIXME: Make sure it can do everything a frame can
 
 ---@class WindowFrameButtonsParams : ModuleParams
 ---@field name string The name of the root frame
@@ -13,6 +14,8 @@ local handler_names = {
 ---@field has_pin_button boolean? Whether or not to add the pin button
 ---@field has_close_button boolean? Whether or not to add the close button
 ---@field children GuiElemDef The element that is contained within the frame
+---@field style string? The style of the root frame
+---@field style_mods LuaStyle? Modifications to the style of the root frame
 ---@type ModuleParameterDict
 module.parameters = {
 	name = {is_optional = false, type = {"string"}},
@@ -21,6 +24,8 @@ module.parameters = {
 	has_pin_button = {is_optional = true, type = {"boolean"}},
 	has_close_button = {is_optional = true, type = {"boolean"}},
 	children = {is_optional = false, type = {"table"}},
+	style = {is_optional = true, type = {"string"}},
+	style_mods = {is_optional = true, type = {"table"}},
 }
 
 ---Creates the frame for a window with an exit button
@@ -32,40 +37,41 @@ function module.build_func(params)
 ---@diagnostic disable-next-line: missing-fields
 		visible = false, elem_mods = { auto_center = true },
 		handler = {[defines.events.on_gui_closed] = "close"},
+		style = params.style, style_mods = params.style_mods,
 		children = {
 			{
 				type = "flow", direction = "vertical",
 				children = {
-					{
+					{ -- The titlebar
 						type = "flow", style = "flib_titlebar_flow",
 						direction = "horizontal", drag_target = params.name,
 						children = {
-							{
+							{ -- Title
 								type = "label", style = "frame_title",
 								caption = params.title, ignored_by_interaction = true
 							},
-							{
+							{ -- Drag handle
 								type = "empty-widget", style = "flib_titlebar_drag_handle",
 								ignored_by_interaction = true,
 							},
-							-- params.has_config_button and {
+							-- params.has_config_button and { -- Config button
 							-- 	type = "module", module_type = "frame_action_button",
 							-- 	name = "config_button", tooltip = {"gui.flib-settings"},
 							-- 	sprite = "flib_settings", handler = params.config_handler
 							-- } or {},
-							params.has_pin_button and {
+							params.has_pin_button and { -- Pin button
 								type = "module", module_type = "frame_action_button",
 								name = "pin_button", tooltip = {"gui.flib-keep-open"},
 								sprite = "flib_pin", handler = handler_names.pin
 							} or {},
-							params.has_close_button and {
+							params.has_close_button and { -- Close button
 								type = "module", module_type = "frame_action_button",
 								name = "window_close_button", tooltip = {"gui.close-instruction"},
 								sprite = "utility/close", handler = "hide"
 							} or {},
 						}
 					},
-					{
+					{ -- The flow for the contents
 						type = "flow", style = "inset_frame_container_horizontal_flow",
 						direction = "horizontal",
 						children = params.children

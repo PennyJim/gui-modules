@@ -33,6 +33,8 @@ require("__gui-modules__.gui").new{
 			module_type = "window_frame",
 			name = "testing", title = "Testing",
 			has_close_button = true, has_pin_button = true,
+---@diagnostic disable-next-line: missing-fields
+			style_mods = {natural_height = 10000, natural_width = 10000},
 			children = {
 				{
 					type = "module", module_type = "split_pane",

@@ -2,13 +2,17 @@ local module = {module_type = "editable_label", handlers = {}}
 
 ---@class WindowState.editable_label : WindowState
 -- Where custom fields would go
+---@field was_pinned boolean? Whether or not the window was pinned before focus
+---@field is_cancelable_focus boolean?
 
 local handler_names = {
 	-- A generic place to make sure handler names match
 	-- in both handler definitons and in the build_func
 	edit_button = "editable_label.edit_button",
 	confirm = "editable_label.confirm",
-	cancel = "editable_label.cancel"
+	cancel = "editable_label.cancel",
+	focus = "editable_label.focus",
+	unfocus = "editable_label.unfocus",
 }
 
 ---@class editableLabelDef : ModuleDef
@@ -37,9 +41,12 @@ function module.build_func(params)
 			},
 			{
 				type = "textfield", visible = false,
+				lose_focus_on_confirm = true,
 				handler = {
 					[defines.events.on_gui_confirmed]=handler_names.confirm,
-					[defines.events.on_gui_closed]=handler_names.cancel, -- FIXME: not the right event. 
+					[defines.events.on_gui_closed]=handler_names.cancel,
+					[handler_names.focus]=handler_names.focus, -- Fake functions because focus and unfocus don't exist (yet?)
+					[handler_names.unfocus]=handler_names.unfocus,
 				}
 			},
 			{
@@ -66,6 +73,7 @@ module.handlers[handler_names.edit_button] = function (self, namespace, EventDat
 		textfield.visible = true
 		textfield.focus()
 		button.tooltip = {"gui-edit-label.save-label"}
+		return textfield, handler_names.focus
 	else
 		return textfield, defines.events.on_gui_confirmed
 	end
@@ -97,13 +105,14 @@ end
 ---@param namespace string
 ---@param EventData GuiEventData
 module.handlers[handler_names.cancel] = function (self, namespace, EventData)
+	if not self.is_cancelable_focus then return end
 	local module = EventData.element.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
 	local textfield = module.children[2]
 	local button = module.children[3]
 
 	local old_text = label.caption
-	if old_text == label.tabs.default_caption then
+	if old_text == label.tags.default_caption then
 		old_text = ""
 	end
 	---@cast old_text string
@@ -111,6 +120,28 @@ module.handlers[handler_names.cancel] = function (self, namespace, EventData)
 	label.visible = true
 	textfield.visible = false
 	button.tooltip = {"gui-edit-label.edit-label"}
+	return nil, handler_names.unfocus
+end
+---@param self WindowState.editable_label
+---@param namespace string
+---@param EventData GuiEventData
+module.handlers[handler_names.focus] = function (self, namespace, EventData)
+	local module = EventData.element.parent --[[@as LuaGuiElement]]
+	local textfield = module.children[2]
+
+	self.was_pinned = self.pinned
+	self.pinned = true
+	self.is_cancelable_focus = true
+	self.player.opened = textfield
+end
+---@param self WindowState.editable_label
+---@param namespace string
+---@param EventData GuiEventData
+module.handlers[handler_names.unfocus] = function (self, namespace, EventData)
+	self.pinned = self.was_pinned
+	self.player.opened = self.pinned and nil or self.root
+	self.was_pinned = nil
+	self.is_cancelable_focus = nil
 end
 
 return module --[[@as GuiModuleDef]]

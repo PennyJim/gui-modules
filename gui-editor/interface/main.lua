@@ -36,9 +36,11 @@ require("__gui-modules__.gui").new{
 									type = "frame", style = "subheader_frame",
 									children = {
 										{
-											type = "label",
-											caption = "Root"
-										},
+											-- type = "label",
+											-- caption = "Root"
+											type = "module", module_type = "editable_label",
+											default_caption = "Root"
+										} --[[@as editableLabelParams]],
 										{
 											type = "empty-widget", style = "flib_horizontal_pusher"
 										}

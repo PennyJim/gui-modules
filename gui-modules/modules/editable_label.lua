@@ -18,20 +18,28 @@ local handler_names = {
 -- where LuaLS parameter definitons go
 ---@field default_caption LocalisedString
 ---@field confirm_handler string?
+---@field reserve_space boolean?
 ---@type ModuleParameterDict
 module.parameters = {
 	-- Where gui-modules parameter definitons go
 	default_caption = {is_optional = false, type = {"string","table"}},
 	confirm_handler = {is_optional = true, type = {"string"}},
+	reserve_space = {is_optional = true, type = {"boolean"}},
 }
 
 ---Creates the frame for a window with an exit button
 ---@param params EditableLabelDef
 ---@return GuiElemDef
 function module.build_func(params)
+	local reserve_space = params.reserve_space ~= false
 	return {
 		type = "flow", direction = "horizontal",
 		style = "flib_indicator_flow",
+---@diagnostic disable-next-line: missing-fields
+		style_mods = {
+			minimal_height = 28,
+			natural_width = reserve_space and 220 or nil --[[@as integer]]
+		},
 		children = {
 			{
 				type = "label", caption = params.default_caption,
@@ -94,7 +102,7 @@ module.handlers[handler_names.confirm] = function (self, elem)
 	textfield.visible = false
 	button.tooltip = {"gui-edit-label.edit-label"}
 	self.opened = nil
-	return label
+	return label, defines.events.on_gui_confirmed
 end
 ---@param self WindowState.editable_label
 ---@param elem LuaGuiElement

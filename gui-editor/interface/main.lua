@@ -1,27 +1,7 @@
----@type GuiElemModuleDef[]
-local filler_children = {{
+---@type GuiElemModuleDef
+local filler_child = {
 	type = "label", caption = "Filler"
-}--[[@as GuiElemModuleDef]]}
-
----@type GuiElemModuleDef[]
-local vert_pusher_children = {
-	{
-		type = "flow", direction = "vertical",
-		children = {
-			{
-				type = "empty-widget",
-				style = "flib_vertical_pusher"
-			},
-			{
-				type = "label", caption = "Filler"
-			},
-			{
-				type = "empty-widget",
-				style = "flib_vertical_pusher"
-			}
-		}
-	}
-}
+}--[[@as GuiElemModuleDef]]
 
 require("__gui-modules__.gui").new{
 	namespace = "testing", version = 0,
@@ -41,26 +21,26 @@ require("__gui-modules__.gui").new{
 					number_of_panes = 2, direction = "horizontal",
 					frame_styles = "invisible_frame",
 					panes = {
-						{{
+						{
 							type = "module", module_type = "split_pane",
 							number_of_panes = 5, direction = "vertical",
 							panes = {
-								filler_children,
-								filler_children,
-								filler_children,
-								filler_children,
-								filler_children
+								filler_child,
+								filler_child,
+								filler_child,
+								filler_child,
+								filler_child
 							}
-						}},
-						{{
+						},
+						{
 							type = "module", module_type = "split_pane",
 							number_of_panes = 3, direction = "vertical",
 							panes = {
-								filler_children,
-								vert_pusher_children,
-								filler_children
+								filler_child,
+								filler_child,
+								filler_child
 							}
-						}}
+						}
 					}
 				} --[[@as SplitPaneModuleParams]]
 			}

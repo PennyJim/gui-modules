@@ -12,7 +12,7 @@ local handler_names = {
 -- where LuaLS parameter definitons go
 ---@field number_of_panes integer
 ---@field direction "horizontal"|"vertical"
----@field panes GuiElemModuleDef[][]
+---@field panes GuiElemModuleDef[]
 ---@field frame_styles string[]|string
 ---@type ModuleParameterDict
 module.parameters = {
@@ -43,8 +43,8 @@ function module.build_func(params)
 	for i = 1, panes, 1 do
 		children[i] = {
 			type = "frame", style = style or styles[i],
-			children = pane_contents[i]
-		}
+			children = {pane_contents[i]}
+		} --[[@as GuiElemModuleDef]]
 	end
 	return {
 		type = "flow", direction = params.direction,

@@ -40,7 +40,7 @@ require("__gui-modules__.gui").new{
 											-- caption = "Root"
 											type = "module", module_type = "editable_label",
 											default_caption = "Root"
-										} --[[@as editableLabelParams]],
+										} --[[@as editableLabelDef]],
 										{
 											type = "empty-widget", style = "flib_horizontal_pusher"
 										}
@@ -76,9 +76,9 @@ require("__gui-modules__.gui").new{
 							}
 						}
 					}
-				} --[[@as SplitPaneModuleParams]]
+				} --[[@as SplitPaneModuleDef]]
 			}
-		} --[[@as WindowFrameButtonsParams]]
+		} --[[@as WindowFrameButtonsDef]]
 	}
 }--[[@as GuiWindowDef]]{
 	-- other Handlers go here

@@ -11,7 +11,7 @@ local handler_names = {
 	cancel = "editable_label.cancel"
 }
 
----@class editableLabelParams : ModuleParams
+---@class editableLabelDef : ModuleDef
 ---@field default_caption LocalisedString
 ---@field confirm_handler string?
 -- where LuaLS parameter definitons go
@@ -23,7 +23,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params editableLabelParams
+---@param params editableLabelDef
 ---@return GuiElemDef
 function module.build_func(params)
 	return {

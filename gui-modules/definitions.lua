@@ -21,7 +21,7 @@
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlerNames string|table<defines.events,string>
 
----@class ModuleParams : GuiElemModuleDef
+---@class ModuleDef : GuiElemModuleDef
 ---@class ModuleParameterDef
 ---@field is_optional boolean Whether or not this parameter is required
 ---@field type type[] The possible types of this parameter

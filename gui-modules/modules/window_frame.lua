@@ -8,7 +8,7 @@ local handler_names = {
 }
 -- FIXME: Make sure it can do everything a frame can
 
----@class WindowFrameButtonsParams : ModuleParams
+---@class WindowFrameButtonsDef : ModuleDef
 ---@field name string The name of the root frame
 ---@field title LocalisedString The title of the frame
 ---@field has_pin_button boolean? Whether or not to add the pin button
@@ -31,7 +31,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params WindowFrameButtonsParams
+---@param params WindowFrameButtonsDef
 ---@return GuiElemDef
 function module.build_func(params)
 	params.draggable = params.draggable ~= false

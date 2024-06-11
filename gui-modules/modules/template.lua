@@ -8,7 +8,7 @@ local handler_names = {
 	-- in both handler definitons and in the build_func
 }
 
----@class myModuleParams : ModuleParams
+---@class myModuleParams : ModuleDef
 -- where LuaLS parameter definitons go
 ---@type ModuleParameterDict
 module.parameters = {
@@ -24,7 +24,7 @@ function module.build_func(params)
 end
 
 -- How to define handlers
--- ---@param self WindowState.window_frame
+-- ---@param self WindowState.my_module
 -- module.handlers[handler_names.my_handler] = function (self)
 -- 	-- Do stuff
 -- end

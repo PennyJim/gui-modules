@@ -8,7 +8,7 @@ local handler_names = {
 	-- in both handler definitons and in the build_func
 }
 
----@class SplitPaneModuleParams : ModuleParams
+---@class SplitPaneModuleDef : ModuleDef
 -- where LuaLS parameter definitons go
 ---@field number_of_panes integer
 ---@field direction "horizontal"|"vertical"
@@ -26,7 +26,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params SplitPaneModuleParams
+---@param params SplitPaneModuleDef
 ---@return GuiElemDef
 function module.build_func(params)
 	local panes = params.number_of_panes
@@ -60,11 +60,5 @@ function module.build_func(params)
 		children = children
 	}
 end
-
--- How to define handlers
--- ---@param self WindowState.window_frame
--- module.handlers[handler_names.my_handler] = function (self)
--- 	-- Do stuff
--- end
 
 return module --[[@as GuiModuleDef]]

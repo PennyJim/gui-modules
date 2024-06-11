@@ -39,7 +39,7 @@ require("__gui-modules__.gui").new{
 											-- type = "label",
 											-- caption = "Root"
 											type = "module", module_type = "editable_label",
-											default_caption = "Root"
+											default_caption = "Root", confirm_handler = "test_handler"
 										} --[[@as editableLabelDef]],
 										{
 											type = "empty-widget", style = "flib_horizontal_pusher"
@@ -81,5 +81,8 @@ require("__gui-modules__.gui").new{
 		} --[[@as WindowFrameButtonsDef]]
 	}
 }--[[@as GuiWindowDef]]{
+	test_handler = function ()
+		game.print("TEST!!")
+	end
 	-- other Handlers go here
 }

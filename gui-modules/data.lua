@@ -5,16 +5,20 @@ local modules = {}
 ---@param definition GuiModuleDef
 local function validate_module(definition)
 	if modules[definition.module_type] then
-		error({"library-errors.module-already-exists"}, 2)
+		error({"gui-errors.module-already-exists"}, 2)
 	end
-	if not definition.build_func or type(definition.build_func) ~= "function" then
-		error({"library-errors.needs-build-func"}, 2)
+	modules[definition.module_type] = true
+
+	local build_func = definition.build_func
+	if not build_func or type(build_func) ~= "function" then
+		error({"gui-errors.needs-build-func"}, 2)
 	end
 	if not definition.handlers then
-		error({"library-errors.needs-handler-table"}, 2)
+		error({"gui-errors.needs-handler-table"}, 2)
 	end
-	if not definition.parameters then
-		error({"library-errors.needs-parameter-table"}, 2)
+	local parameters = definition.parameters
+	if not parameters then
+		error({"gui-errors.needs-parameter-table"}, 2)
 	end
 	modules[definition.module_type] = true
 end
@@ -26,7 +30,7 @@ for name, setting in pairs(settings.startup) do
 		---@type GuiModuleDef
 		local module = require(setting.value --[[@as string]])
 		if module.module_type ~= module_name then
-			log{"library-errors.different-expected-name", module_name, module.module_type}
+			log{"gui-errors.different-expected-name", module_name, module.module_type}
 		end
 		validate_module(module)
 	end

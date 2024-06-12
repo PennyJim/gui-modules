@@ -5,3 +5,4 @@ A pair of mods that are intended to be used to generate a string that the latter
 ### Todo
 - [ ]: Change how events are registered to be compatibile with a users's own registered events
 - [ ]: Provide 'instantiable' elements functionality
+- [ ]: Use Informatron/Tips and Tricks to make documentation

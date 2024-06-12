@@ -1,4 +1,5 @@
 local modules = {}
+local validate_module = {}
 
 ---Validates the modules and throws errors on invalid modules
 ---*now* rather than letting an someone try and use it
@@ -14,13 +15,26 @@ function validate_module.module(name, definition)
 	if not build_func or type(build_func) ~= "function" then
 		error({"gui-errors.needs-build-func", name}, 2)
 	end
+	local handlers = definition.handlers
+	if not handlers or type(handlers) ~= "table" then
 		error({"gui-errors.needs-handler-table", name}, 2)
 	end
+	validate_module.handlers(name, handlers)
 	local parameters = definition.parameters
-	if not parameters then
+	if not parameters or type(parameters) ~= "table" then
 		error({"gui-errors.needs-parameter-table", name}, 2)
 	end
---
+end
+
+---validates each handler is a function
+---@param name string
+---@param handlers GuiModuleEventHandlers
+function validate_module.handlers(name, handlers)
+	for key, handler in pairs(handlers) do
+		if type(handler) ~= "function" then
+			error({"gui-errors.handler-function", name, key}, 3)
+		end
+	end
 end
 
 local prefix = "gui_module_add_"

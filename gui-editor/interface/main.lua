@@ -102,7 +102,12 @@ gui.new{
 			children = {
 				{
 					type = "module", module_type = "editable_label",
-					default_caption = "<unamed label>", confirm_handler = "test_handler"
+					default_caption = "<unamed label>", confirm_handler = "test_handler",
+					include_icon_picker = true,
+					caption = "Named Label",
+					style = "subheader_caption_label",
+					style_mods = {width = 100},
+					tooltip = "You can edit this!",
 				} --[[@as EditableLabelDef]]
 			}
 		} --[[@as WindowFrameButtonsDef]]

@@ -21,6 +21,12 @@ local handler_names = {
 ---@field confirm_handler string?
 ---@field reserve_space boolean?
 ---@field include_icon_picker boolean?
+-- label values
+---@field caption LocalisedString?
+---@field style string?
+---@field style_mods LuaStyle?
+---@field tooltip LocalisedString?
+---@field elem_tooltip ElemID?
 ---@type ModuleParameterDict
 module.parameters = {
 	-- Where gui-modules parameter definitons go
@@ -28,6 +34,12 @@ module.parameters = {
 	confirm_handler = {is_optional = true, type = {"string"}},
 	reserve_space = {is_optional = true, type = {"boolean"}},
 	include_icon_picker = {is_optional = true, type = {"boolean"}},
+	-- label values
+	caption = {is_optional = true, type = {"string","table"}},
+	style = {is_optional = true, type = {"string"}},
+	style_mods = {is_optional = true, type = {"table"}},
+	tooltip = {is_optional = true, type = {"string","table"}},
+	elem_tooltip = {is_optional = true, type = {"table"}},
 }
 
 ---Creates the frame for a window with an exit button
@@ -45,13 +57,18 @@ function module.build_func(params)
 		},
 		children = {
 			{
-				type = "label", caption = params.default_caption,
+				type = "label", caption = params.caption or params.default_caption,
 				tags = {default_caption = params.default_caption},
-				handler = {[defines.events.on_gui_confirmed]=params.confirm_handler}
+				handler = {[defines.events.on_gui_confirmed]=params.confirm_handler},
+				-- user specified:
+				style = params.style, style_mods = params.style_mods,
+				tooltip = params.tooltip,
+				elem_tooltip = params.elem_tooltip,
 			},
 			{
 				type = "textfield", visible = false,
-				lose_focus_on_confirm = true,
+				lose_focus_on_confirm = true, text = params.caption,
+				clear_and_focus_on_right_click = true,
 				handler = {
 					[defines.events.on_gui_confirmed]=handler_names.confirm,
 					[defines.events.on_gui_closed]=handler_names.cancel,

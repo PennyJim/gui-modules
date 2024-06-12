@@ -45,7 +45,8 @@ local visual_editor = {
 									children = {
 										{
 											type = "module", module_type = "editable_label",
-											default_caption = "Root", confirm_handler = "test_handler"
+											default_caption = "Root", confirm_handler = "test_handler",
+											style = "subheader_caption_label",
 										} --[[@as EditableLabelDef]],
 										{
 											type = "empty-widget", style = "flib_horizontal_pusher"
@@ -88,9 +89,7 @@ local visual_editor = {
 	}
 }--[[@as GuiWindowDef]]
 
-
--- gui.new(visual_editor)(test_handlers)
-gui.new{
+local test = {
 	namespace = "testing", version = 0,
 	shortcut = "visual-editor", custominput = "visual-editor",
 	root = "screen",
@@ -112,4 +111,7 @@ gui.new{
 			}
 		} --[[@as WindowFrameButtonsDef]]
 	}
-}(test_handlers)
+}--[[@as GuiWindowDef]]
+
+gui.new(visual_editor)(test_handlers)
+-- gui.new(test)(test_handlers)

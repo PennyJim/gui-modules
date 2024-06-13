@@ -4,7 +4,9 @@
 
 ---@class GuiElemModuleDef : GuiElemDef
 ---@field type GuiElementType|"module"|"instantiable"
----@field children GuiElemModuleDef[]?
+---@field children GuiElemModuleDef|GuiElemModuleDef[]?
+---@field tab GuiElemModuleDef?
+---@field content GuiElemModuleDef?
 ---@field module_type string? The name of the module
 ---@field instantiable_name string? The name of the instantiable
 ---@field handler GuiModuleEventHandlerNames?

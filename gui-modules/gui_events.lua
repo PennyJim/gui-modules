@@ -82,7 +82,7 @@ function gui_events.register(new_handlers, namespace, override_old)
     end
   end
 end
----comment
+---Converts the name of handlers to tags
 ---@param namespace namespace
 ---@param child GuiElemModuleDef
 function gui_events.convert_handler_names(namespace, child)

@@ -142,7 +142,6 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---@param child GuiElemModuleDef
 ---@return GuiElemModuleDef
 local function resolve_instantiable(namespace, arr, index, child)
-	if child.type ~= "instantiable" then return child end
 	local instance = instances[namespace][child.instantiable_name]
 	if not instance then
 		error{"gui-errors.invalid-instantiable", namespace, child}
@@ -157,7 +156,6 @@ end
 ---@param child GuiElemModuleDef
 ---@return GuiElemModuleDef
 local function expand_module(namespace, arr, index, child)
-	if child.type ~= "module" then return child end -- Skip if not module
 	local mod_type = child.module_type
 	if not mod_type then 
 		error{"gui-errors.no-module-name"}
@@ -174,12 +172,44 @@ local function expand_module(namespace, arr, index, child)
 end
 ---Go over every element and preprocess it for use in flib_gui
 ---@param namespace namespace
----@param definition GuiElemModuleDef[]
-local function parse_children(namespace, definition)
-	for child_array, index, child in every_child(definition) do
-		child = resolve_instantiable(namespace, child_array, index, child)
-		child = expand_module(namespace, child_array, index, child)
-		gui_events.convert_handler_names(namespace, child)
+---@param children GuiElemModuleDef|GuiElemModuleDef[]
+local function parse_children(namespace, children)
+	-- Convert single-children into an array
+	if children.type then
+		children = {children}
+	end
+
+	for i = 1, #children do
+		-- Cache the child and type
+		local child = children[i]
+		local type = child.type
+
+		-- Resolve instantiable if it is one
+		if type == "instantiable" then
+			child = resolve_instantiable(namespace, children, i, child)
+			type = child.type
+		end
+
+		-- Expand the module if it is one
+		if type == "module" then
+			child = expand_module(namespace, children, i, child)
+			type = child.type
+		end
+
+		if type then
+			-- Convert handlers
+			gui_events.convert_handler_names(namespace, child)
+
+			-- Recurse into children, if there are any
+			local children = child.children
+			if children then
+				parse_children(namespace, children)
+			end
+
+		-- treat a tab and content like a short children array
+		elseif child.tab and child.content then
+			parse_children(namespace, {child.tab, child.content})
+		end
 	end
 end
 

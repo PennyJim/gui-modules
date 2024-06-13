@@ -8,7 +8,7 @@ modules_gui = {}
 local flib_gui = require("__flib__.gui-lite")
 local gui_events = require("__gui-modules__.gui_events")
 local validate_module_params = require("__gui-modules__.module_validation")
-local every_child = require("__gui-modules__.children-iterator")
+require("util")
 local standard_handlers = {}
 
 ---@type {[string]:GuiModuleDef}
@@ -137,25 +137,20 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 
 ---Resolve the instantiable into a GuiElemModuleDef
 ---@param namespace namespace
----@param arr GuiElemModuleDef[]
----@param index integer
 ---@param child GuiElemModuleDef
 ---@return GuiElemModuleDef
-local function resolve_instantiable(namespace, arr, index, child)
+local function resolve_instantiable(namespace, child)
 	local instance = instances[namespace][child.instantiable_name]
 	if not instance then
 		error{"gui-errors.invalid-instantiable", namespace, child}
 	end
-	arr[index] = instance
 	return instance
 end
 ---Expands the module into their elements
 ---@param namespace namespace
----@param arr GuiElemModuleDef[]
----@param index integer
 ---@param child GuiElemModuleDef
 ---@return GuiElemModuleDef
-local function expand_module(namespace, arr, index, child)
+local function expand_module(namespace, child)
 	local mod_type = child.module_type
 	if not mod_type then 
 		error{"gui-errors.no-module-name"}
@@ -166,9 +161,7 @@ local function expand_module(namespace, arr, index, child)
 	-- Register the module handlers
 	gui_events.register(module.handlers, namespace)
 	-- replace the module element with the expanded elements
-	local new_child = module.build_func(child)
-	arr[index] = new_child
-	return new_child
+	return module.build_func(child)
 end
 ---Go over every element and preprocess it for use in flib_gui
 ---@param namespace namespace
@@ -183,16 +176,18 @@ local function parse_children(namespace, children)
 		-- Cache the child and type
 		local child = children[i]
 		local type = child.type
+		local do_recruse = true
 
 		-- Resolve instantiable if it is one
 		if type == "instantiable" then
-			child = resolve_instantiable(namespace, children, i, child)
+			do_recruse = false
+			child = resolve_instantiable(namespace, child)
 			type = child.type
 		end
 
 		-- Expand the module if it is one
 		if type == "module" then
-			child = expand_module(namespace, children, i, child)
+			child = expand_module(namespace, child)
 			type = child.type
 		end
 
@@ -202,7 +197,7 @@ local function parse_children(namespace, children)
 
 			-- Recurse into children, if there are any
 			local children = child.children
-			if children then
+			if do_recruse and children then
 				parse_children(namespace, children)
 			end
 
@@ -243,6 +238,27 @@ function build(player, namespace)
 	return self
 end
 
+---Parses and creates the entity.
+---
+---This loops over the table 2-3 times to 
+---1. deepcopy (optional)
+---2. parse and convert for flib use
+---3. Actually build with flib
+---
+---Instances are pre-parsed, so the better option would be
+---to register all instances at the start so you only have to build it
+---@param namespace namespace
+---@param parent LuaGuiElement
+---@param new_children GuiElemModuleDef
+---@param do_not_copy boolean?
+function modules_gui.add(namespace, parent, new_children, do_not_copy)
+	if not do_not_copy then
+		new_children = table.deepcopy(new_children)
+	end
+	parse_children(namespace, new_children)
+	flib_gui.add(parent, new_children)
+end
+
 ---Registers a namespace for use
 ---@param namespace namespace
 function modules_gui.new_namespace(namespace)
@@ -260,6 +276,7 @@ end
 ---Passing nil will unregister it
 ---@param namespace namespace
 ---@param shortcut string?
+---@param skip_check boolean?
 function modules_gui.register_shortcut(namespace, shortcut, skip_check)
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
@@ -290,14 +307,14 @@ function modules_gui.define_window(namespace, window_def, handlers)
 	-- Either create new namespace, or update missing values
 	if not namespaces[namespace] then
 		modules_gui.new_namespace(namespace)
-		modules_gui.register_shortcut(namespace, window_def.shortcut)
-		modules_gui.register_custominput(namespace, window_def.custominput)
+		modules_gui.register_shortcut(namespace, window_def.shortcut, true)
+		modules_gui.register_custominput(namespace, window_def.custominput, true)
 	else
 		if not shortcut_namespace[namespace] then
-			modules_gui.register_shortcut(namespace, window_def.shortcut)
+			modules_gui.register_shortcut(namespace, window_def.shortcut, true)
 		end
 		if not custominput_namespace[namespace] then
-			modules_gui.register_custominput(namespace, window_def.custominput)
+			modules_gui.register_custominput(namespace, window_def.custominput, true)
 		end
 	end
 	if definitions[namespace] then
@@ -335,10 +352,10 @@ end
 ---@param custominput_name string?
 function modules_gui.new(window_def, handlers, shortcut_name, custominput_name)
 	local namespace = window_def.namespace
-	modules_gui.new_namespace(namespace, 2)
-	modules_gui.register_shortcut(namespace, shortcut_name, 2)
-	modules_gui.register_custominput(namespace, custominput_name, 2)
-	modules_gui.define_window(namespace, window_def, handlers, 2)
+	modules_gui.new_namespace(namespace)
+	modules_gui.register_shortcut(namespace, shortcut_name, true)
+	modules_gui.register_custominput(namespace, custominput_name, true)
+	modules_gui.define_window(namespace, window_def, handlers)
 end
 
 return modules_gui

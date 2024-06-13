@@ -138,19 +138,24 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---Resolve the instantiable into a GuiElemModuleDef
 ---@param namespace namespace
 ---@param child GuiElemModuleDef
+---@param arr GuiElemModuleDef[]
+---@param index integer
 ---@return GuiElemModuleDef
-local function resolve_instantiable(namespace, child)
+local function resolve_instantiable(namespace, child, arr, index)
 	local instance = instances[namespace][child.instantiable_name]
 	if not instance then
 		error{"gui-errors.invalid-instantiable", namespace, child}
 	end
+	arr[index] = instance
 	return instance
 end
 ---Expands the module into their elements
 ---@param namespace namespace
 ---@param child GuiElemModuleDef
+---@param arr GuiElemModuleDef[]
+---@param index integer
 ---@return GuiElemModuleDef
-local function expand_module(namespace, child)
+local function expand_module(namespace, child, arr, index)
 	local mod_type = child.module_type
 	if not mod_type then 
 		error{"gui-errors.no-module-name"}
@@ -161,17 +166,14 @@ local function expand_module(namespace, child)
 	-- Register the module handlers
 	gui_events.register(module.handlers, namespace)
 	-- replace the module element with the expanded elements
-	return module.build_func(child)
+	local module = module.build_func(child)
+	arr[index] = module
+	return module
 end
 ---Go over every element and preprocess it for use in flib_gui
 ---@param namespace namespace
----@param children GuiElemModuleDef|GuiElemModuleDef[]
+---@param children GuiElemModuleDef[]
 local function parse_children(namespace, children)
-	-- Convert single-children into an array
-	if children.type then
-		children = {children}
-	end
-
 	for i = 1, #children do
 		-- Cache the child and type
 		local child = children[i]
@@ -181,13 +183,13 @@ local function parse_children(namespace, children)
 		-- Resolve instantiable if it is one
 		if type == "instantiable" then
 			do_recruse = false
-			child = resolve_instantiable(namespace, child)
+			child = resolve_instantiable(namespace, child, children, i)
 			type = child.type
 		end
 
 		-- Expand the module if it is one
 		if type == "module" then
-			child = expand_module(namespace, child)
+			child = expand_module(namespace, child, children, i)
 			type = child.type
 		end
 
@@ -198,6 +200,11 @@ local function parse_children(namespace, children)
 			-- Recurse into children, if there are any
 			local children = child.children
 			if do_recruse and children then
+				-- Convert single-children into an array
+				if children.type then
+					children = {children}
+					child.children = children
+				end
 				parse_children(namespace, children)
 			end
 

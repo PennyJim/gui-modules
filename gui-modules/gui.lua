@@ -2,6 +2,7 @@
 if ... ~= "__gui-modules__.gui" then
 	return require("__gui-modules__.gui")
 end
+modules_gui = {}
 
 ---@type flib_gui
 local flib_gui = require("__flib__.gui-lite")
@@ -23,13 +24,13 @@ do -- Grab the modules from startup settings
 	end
 end
 
----@type {[namespace]:GuiWindowDef}
+---@type table<namespace,true>
+local namespaces = {} -- Whether or not the namespace was registered
+---@type table<namespace,GuiWindowDef>
 local definitions = {} -- the definitions for each namespace
----@type {[namespace]:GuiModuleEventHandlers}
-local namespace_handlers = {} -- The dictionary of handlers for each namespace
----@type {[string]:namespace}
+---@type table<string,namespace>
 local shortcut_namespace = {} -- map from shortcut names to namespace 
----@type {[string]:namespace}
+---@type table<string,namespace>
 local custominput_namespace = {} -- map from custominput event names to namespace
 
 --#region Standard Event Handlers
@@ -126,10 +127,10 @@ function input_or_shortcut_handler(EventData)
 	standard_handlers.toggle(self)
 end
 
-local event_lib = gui_events.events
-event_lib[defines.events.on_player_created] = created_player_handler
-event_lib[defines.events.on_player_removed] = removed_player_handler
-event_lib[defines.events.on_lua_shortcut] = input_or_shortcut_handler
+modules_gui.events = gui_events.events
+modules_gui.events[defines.events.on_player_created] = created_player_handler
+modules_gui.events[defines.events.on_player_removed] = removed_player_handler
+modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 --#endregion
 
 
@@ -173,7 +174,7 @@ end
 function build(player, namespace)
 	local info = definitions[namespace]
 	if not info then
-		error({"gui-errors.undefined-namespace"}, 2)
+		error({"gui-errors.undefined-namespace-build"}, 2)
 	end
 
 	local elems, root = flib_gui.add(
@@ -196,59 +197,105 @@ function build(player, namespace)
 end
 -- flib_gui.handle_events() -- flib resolves functions to names and and wraps it in a separate lookup table. It's evil >:(
 
-
----Creates a new namespace with the window definition
----@param window_def GuiWindowDef
----@param shortcut_name string?
----@param custominput_name string?
----@return fun(h:GuiModuleEventHandlers):table
-function new_namespace(window_def, shortcut_name, custominput_name)
-	local namespace = window_def.namespace
+---Registers a namespace for use
+---@param namespace namespace
+---@param depth nil
+function modules_gui.new_namespace(namespace, depth)
+	depth = depth and depth + 1 or 2
 	if namespace:match("/") then
-		error({"gui-errors.invalid-namespace", namespace, namespace:match("/")}, 2)
+		error({"gui-errors.invalid-namespace", namespace, namespace:match("/")}, depth)
 	end
 	if definitions[namespace] then
-		error({"gui-errors.namespace-already-defined", namespace}, 2)
+		error({"gui-errors.namespace-already-defined", namespace}, depth)
+	end
+	global[namespace] = global[namespace] or {}
+	namespaces[namespace] = true
+end
+---Registers the shortcut with the window in the namespace.
+---Passing nil will unregister it
+---@param namespace namespace
+---@param shortcut string?
+---@param depth nil
+function modules_gui.register_shortcut(namespace, shortcut, depth)
+	if depth and not namespaces[namespace] then
+		error({"gui-errors.undefined-namespace"}, depth)
+	end
+	depth = depth and depth + 1 or 2
+	shortcut_namespace[namespace] = shortcut
+end
+---Registers the custominput with the window in the namespace.
+---Passing nil will unregister it
+---@param namespace namespace
+---@param custominput string?
+---@param depth nil
+function modules_gui.register_custominput(namespace, custominput, depth)
+	if depth and not namespaces[namespace] then
+		error({"gui-errors.undefined-namespace-build"}, depth)
+	end
+	depth = depth and depth + 1 or 2
+	custominput_namespace[namespace] = custominput
+	if custominput then
+		modules_gui.events[custominput] = input_or_shortcut_handler
+		custominput_namespace[namespace] = custominput
+	end
+end
+
+---Defines the window of the namespace
+---@param namespace namespace
+---@param window_def GuiWindowDef
+---@param handlers GuiModuleEventHandlers?
+---@param depth nil
+function modules_gui.define_window(namespace, window_def, handlers, depth)
+	depth = depth and depth + 1 or 2
+	-- Either create new namespace, or update missing values
+	if not namespaces[namespace] then
+		modules_gui.new_namespace(namespace, depth)
+		modules_gui.register_shortcut(namespace, window_def.shortcut, depth)
+		modules_gui.register_custominput(namespace, window_def.custominput, depth)
+	else
+		if not shortcut_namespace[namespace] then
+			modules_gui.register_shortcut(namespace, window_def.shortcut, depth)
+		end
+		if not custominput_namespace[namespace] then
+			modules_gui.register_custominput(namespace, window_def.custominput, depth)
+		end
 	end
 	definitions[namespace] = window_def
 
-	-- TODO: check global to see if there's another version, and purge the UI's if so
-
-	shortcut_name = shortcut_name or window_def.shortcut
-	custominput_name = custominput_name or window_def.custominput
-
-	if shortcut_name then
-		shortcut_namespace[shortcut_name] = namespace
-	end
-	if custominput_name then
-		custominput_namespace[custominput_name] = namespace
-		event_lib[custominput_name] = input_or_shortcut_handler
-	end
-
-	---@type GuiModuleEventHandlers
-	local handlers = {}
-	for key, func in pairs(standard_handlers) do
-		handlers[key] = func
-	end
-	parse_children(namespace, window_def.definition)
-
-	---Adds the handlers to the internal library and registers them with flib
-	---@param new_handlers GuiModuleEventHandlers
-	local function register_handlers(new_handlers)
-		for name, handler in pairs(new_handlers) do
-			if handlers[name] then
-				log({"gui-warnings.duplicate-handler-name", name})
-			end
-			handlers[name] = handler
+	-- Handle version change
+	---@type WindowState[]
+	local namespace_states = global[namespace]
+	if namespace_states[0] ~= window_def.version then
+		log(string.format("Migrating %s from version %s to version %s", namespace, namespace_states[0], window_def.version))
+		for i, self in pairs(namespace_states) do
+			self.root.destroy()
+			namespace_states[i] = nil
 		end
-		gui_events.register(handlers, namespace, false)
-		global[namespace] = global[namespace] or {}
-		global[namespace][0] = window_def.version
 	end
-	return register_handlers
+	namespace_states[0] = window_def.version
+
+	handlers = handlers or {}
+	for name, func in pairs(standard_handlers) do
+		if handlers[name] then
+			log({"gui-warnings.duplicate-handler-name", name})
+		else
+			handlers[name] = func
+		end
+	end
+	gui_events.register(handlers, namespace, false)
+	parse_children(namespace, window_def.definition)
+end
+---Creates a new namespace with the window definition
+---@param window_def GuiWindowDef
+---@param handlers GuiModuleEventHandlers?
+---@param shortcut_name string?
+---@param custominput_name string?
+function modules_gui.new(window_def, handlers, shortcut_name, custominput_name)
+	local namespace = window_def.namespace
+	modules_gui.new_namespace(namespace, 2)
+	modules_gui.register_shortcut(namespace, shortcut_name, 2)
+	modules_gui.register_custominput(namespace, custominput_name, 2)
+	modules_gui.define_window(namespace, window_def, handlers, 2)
 end
 
-return {
-	new = new_namespace,
-	events = event_lib,
-}
+return modules_gui

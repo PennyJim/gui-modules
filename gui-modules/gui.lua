@@ -140,13 +140,12 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---@param arr GuiElemModuleDef[]
 ---@param index integer
 ---@param child GuiElemModuleDef
----@param depth integer
 ---@return GuiElemModuleDef
-local function resolve_instantiable(namespace, arr, index, child, depth)
+local function resolve_instantiable(namespace, arr, index, child)
 	if child.type ~= "instantiable" then return child end
 	local instance = instances[namespace][child.instantiable_name]
 	if not instance then
-		error({"gui-errors.invalid-instantiable", namespace, child}, depth)
+		error{"gui-errors.invalid-instantiable", namespace, child}
 	end
 	arr[index] = instance
 	return instance
@@ -156,14 +155,12 @@ end
 ---@param arr GuiElemModuleDef[]
 ---@param index integer
 ---@param child GuiElemModuleDef
----@param depth integer
 ---@return GuiElemModuleDef
-local function expand_module(namespace, arr, index, child, depth)
+local function expand_module(namespace, arr, index, child)
 	if child.type ~= "module" then return child end -- Skip if not module
-	depth = depth + 1
 	local mod_type = child.module_type
 	if not mod_type then 
-		error({"gui-errors.no-module-name"}, depth)
+		error{"gui-errors.no-module-name"}
 	end
 
 	local module = modules[mod_type]
@@ -178,12 +175,10 @@ end
 ---Go over every element and preprocess it for use in flib_gui
 ---@param namespace namespace
 ---@param definition GuiElemModuleDef[]
----@param depth integer
-local function parse_children(namespace, definition, depth)
-	depth = depth + 1
+local function parse_children(namespace, definition)
 	for child_array, index, child in every_child(definition) do
-		child = resolve_instantiable(namespace, child_array, index, child, depth)
-		child = expand_module(namespace, child_array, index, child, depth)
+		child = resolve_instantiable(namespace, child_array, index, child)
+		child = expand_module(namespace, child_array, index, child)
 		gui_events.convert_handler_names(namespace, child)
 	end
 end
@@ -220,14 +215,12 @@ end
 
 ---Registers a namespace for use
 ---@param namespace namespace
----@param depth nil
-function modules_gui.new_namespace(namespace, depth)
-	depth = depth and depth + 1 or 2
+function modules_gui.new_namespace(namespace)
 	if namespace:match("/") then
-		error({"gui-errors.invalid-namespace", namespace, namespace:match("/")}, depth)
+		error{"gui-errors.invalid-namespace", namespace, namespace:match("/")}
 	end
 	if definitions[namespace] then
-		error({"gui-errors.namespace-already-registered", namespace}, depth)
+		error{"gui-errors.namespace-already-registered", namespace}
 	end
 	global[namespace] = global[namespace] or {}
 	instances[namespace] = {}
@@ -237,24 +230,21 @@ end
 ---Passing nil will unregister it
 ---@param namespace namespace
 ---@param shortcut string?
----@param depth nil
-function modules_gui.register_shortcut(namespace, shortcut, depth)
-	if depth and not namespaces[namespace] then
-		error({"gui-errors.undefined-namespace"}, depth)
+function modules_gui.register_shortcut(namespace, shortcut, skip_check)
+	if not skip_check and not namespaces[namespace] then
+		error{"gui-errors.undefined-namespace"}
 	end
-	depth = depth and depth + 1 or 2
 	shortcut_namespace[namespace] = shortcut
 end
 ---Registers the custominput with the window in the namespace.
 ---Passing nil will unregister it
 ---@param namespace namespace
 ---@param custominput string?
----@param depth nil
-function modules_gui.register_custominput(namespace, custominput, depth)
-	if depth and not namespaces[namespace] then
-		error({"gui-errors.undefined-namespace-build"}, depth)
+---@param skip_check boolean?
+function modules_gui.register_custominput(namespace, custominput, skip_check)
+	if not skip_check and not namespaces[namespace] then
+		error{"gui-errors.undefined-namespace-build"}
 	end
-	depth = depth and depth + 1 or 2
 	custominput_namespace[namespace] = custominput
 	if custominput then
 		modules_gui.events[custominput] = input_or_shortcut_handler
@@ -266,24 +256,22 @@ end
 ---@param namespace namespace
 ---@param window_def GuiWindowDef
 ---@param handlers GuiModuleEventHandlers?
----@param depth nil
-function modules_gui.define_window(namespace, window_def, handlers, depth)
-	depth = depth and depth + 1 or 2
+function modules_gui.define_window(namespace, window_def, handlers)
 	-- Either create new namespace, or update missing values
 	if not namespaces[namespace] then
-		modules_gui.new_namespace(namespace, depth)
-		modules_gui.register_shortcut(namespace, window_def.shortcut, depth)
-		modules_gui.register_custominput(namespace, window_def.custominput, depth)
+		modules_gui.new_namespace(namespace)
+		modules_gui.register_shortcut(namespace, window_def.shortcut)
+		modules_gui.register_custominput(namespace, window_def.custominput)
 	else
 		if not shortcut_namespace[namespace] then
-			modules_gui.register_shortcut(namespace, window_def.shortcut, depth)
+			modules_gui.register_shortcut(namespace, window_def.shortcut)
 		end
 		if not custominput_namespace[namespace] then
-			modules_gui.register_custominput(namespace, window_def.custominput, depth)
+			modules_gui.register_custominput(namespace, window_def.custominput)
 		end
 	end
 	if definitions[namespace] then
-		error({"gui-errors.namespace-already-defined", namespace}, depth)
+		error{"gui-errors.namespace-already-defined", namespace}
 	end
 	definitions[namespace] = window_def
 
@@ -308,7 +296,7 @@ function modules_gui.define_window(namespace, window_def, handlers, depth)
 		end
 	end
 	gui_events.register(handlers, namespace, false)
-	parse_children(namespace, window_def.definition, depth)
+	parse_children(namespace, window_def.definition)
 end
 ---Creates a new namespace with the window definition
 ---@param window_def GuiWindowDef

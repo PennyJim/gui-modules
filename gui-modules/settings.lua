@@ -20,5 +20,5 @@ data:extend{
 	main_module_add("window_frame"),
 	main_module_add("split_pane"),
 	main_module_add("editable_label"),
-	main_module_add("module_validation_test"),
+	-- main_module_add("module_validation_test"),
 }

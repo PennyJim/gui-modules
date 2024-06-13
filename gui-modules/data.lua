@@ -20,7 +20,8 @@ local enum_type_lookup = {
 }
 
 --- So I don't have to keep calling string.format directly
-function error(...) error(string.format(...)) end
+local real_error = error
+local function error(...) real_error(string.format(...)) end
 
 ---Validates the modules and throws errors on invalid modules
 ---*now* rather than letting an someone try and use it
@@ -56,7 +57,7 @@ end
 function validate_module.handlers(name, handlers)
 	for key, handler in pairs(handlers) do
 		if type(key) == "table" then
-			error("The '%s' module has a table for its handler key. That is unusable", name)
+			error("The '%s' module has a table for its handler key. That is unusable and you should feel ashamed (if it was intentional)", name)
 		end
 		if type(handler) ~= "function" then
 			error("The '%s' module has a non-function as its handler for '%s'", name, key)
@@ -73,7 +74,7 @@ function validate_module.param(name, key, definition)
 		error("The '%s' module's parameter keys should all be strings, not '%s'", name, serpent.block(key))
 	end
 	if type(definition) ~= "table" then
-		error("The '%s' module's '%s' parameter needs to be a table", name, key)
+		error("The '%s' module's '%s' parameter needs to be a table defining it", name, key)
 	end
 	local optional = definition.is_optional
 	if type(optional) ~= "boolean" then
@@ -86,8 +87,8 @@ function validate_module.param(name, key, definition)
 	end
 	local can_enum,valid_type_lookup = false,{}
 	for index, type_string in pairs(valid_type_table) do
-		if not valid_type_lookup[type_string] then
-			error("The '%s' module's '%s' parameter's type array has '%s', an invalid value, at index '%s'", name, key, type_string, serpent.dump(index))
+		if not type_lookup[type_string] then
+			error("The '%s' module's '%s' parameter's type array has '%s', an invalid value, at index '%s'", name, key, type_string, serpent.block(index))
 		end
 		if not can_enum and enum_type_lookup[type_string] then
 			can_enum = true
@@ -98,7 +99,7 @@ function validate_module.param(name, key, definition)
 	local enum,enum_values = definition.enum,{}
 	if not can_enum and enum then
 		error("The '%s' module's '%s' parameter has an enum when its types are not enumable", name, key)
-	else
+	elseif enum then
 		if type(enum) ~= "table" then
 			error("The '%s' module's '%s' parameter's enum needs to be an array of values", name, key)
 		end
@@ -106,7 +107,7 @@ function validate_module.param(name, key, definition)
 		for index, value in pairs(enum) do
 			local value_type = type(value)
 			if not enum_type_lookup[value_type] or not valid_type_lookup[value_type] then
-				error("The '%s' module's '%s' parameter's enum has an invalid value of type '%s' at index '%s'", name, key, value_type, serpent.dump(index))
+				error("The '%s' module's '%s' parameter's enum has an invalid value of type '%s' at index '%s'", name, key, value_type, serpent.block(index))
 			end
 		end
 	end
@@ -114,7 +115,7 @@ function validate_module.param(name, key, definition)
 	local default = definition.default
 	if default and not optional then
 		error("The '%s' module's '%s' parameter has a default when it's not nillable", name, key)
-	else
+	elseif default then
 		local default_type = type(default)
 		if not valid_type_lookup[default_type] then
 			error("The '%s' module's '%s' parameter has a default of an invalid type", name, key)
@@ -136,7 +137,7 @@ for name, setting in pairs(settings.startup) do
 		if type(module_name) ~= "string" then
 			error("%s's module is missing a valid name", name)
 		end
-		if module_name ~= module_name then
+		if module_name ~= setting_name then
 			log(string.format("The '%s' module was expected to be named '%s' based on the setting name", module_name, setting_name))
 		end
 		validate_module.module(module_name, module)

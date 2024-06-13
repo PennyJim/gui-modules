@@ -309,6 +309,27 @@ function modules_gui.register_custominput(namespace, custominput, skip_check)
 		custominput_namespace[namespace] = custominput
 	end
 end
+---Registers the instance for use in the window's construction
+---@param namespace namespace
+---@param instances table<string,GuiElemModuleDef>
+---@param do_not_copy boolean?
+function modules_gui.register_instances(namespace, instances, do_not_copy)
+	if not namespaces[namespace] then
+		error{"gui-errors.undefined-namespace"}
+	end
+	local registered_instances = instances[namespace]
+	for name, instance in pairs(instances) do
+		if registered_instances[name] then
+			error{"gui-errors.instance-already-defined", namespace, name}
+		end
+		if not do_not_copy then
+			instance = table.deepcopy(instance) --[[@as GuiElemModuleDef]]
+		end
+		local result = {instance}
+		parse_children(namespace, result)
+		registered_instances[name] = result[1]
+	end
+end
 
 ---Defines the window of the namespace
 ---@param namespace namespace

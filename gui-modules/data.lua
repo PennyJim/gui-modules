@@ -19,27 +19,30 @@ local enum_type_lookup = {
 	-- I'm *this* close to already doing that, but I can't really think of a good reason to
 }
 
+--- So I don't have to keep calling string.format directly
+function error(...) error(string.format(...)) end
+
 ---Validates the modules and throws errors on invalid modules
 ---*now* rather than letting an someone try and use it
 ---@param name string
 ---@param definition GuiModuleDef
 function validate_module.module(name, definition)
 	if modules[definition.module_type] then
-		error{"gui-errors.module-already-exists", name}
+		error("the '%s' module already exists", name)
 	end
 	modules[definition.module_type] = true
 
 	if type(definition.build_func) ~= "function" then
-		error{"gui-errors.needs-build-func", name}
+		error("The '%s' module needs a `build_func`", name)
 	end
 	local handlers = definition.handlers
 	if type(handlers) ~= "table" then
-		error{"gui-errors.needs-handler-table", name}
+		error("The '%s' module needs a handler table, even if it's empty", name)
 	end
 	validate_module.handlers(name, handlers)
 	local parameters = definition.parameters
 	if type(parameters) ~= "table" then
-		error{"gui-errors.needs-parameter-table", name}
+		error("The '%s' module needs a parameter table, even if it's empty", name)
 	end
 
 	for key, definition in pairs(parameters) do
@@ -53,7 +56,7 @@ end
 function validate_module.handlers(name, handlers)
 	for key, handler in pairs(handlers) do
 		if type(handler) ~= "function" then
-			error{"gui-errors.handler-function", name, key}
+			error("The '%s' module has a non-function as its handler for '%s'", name, key)
 		end
 	end
 end
@@ -64,24 +67,24 @@ end
 ---@param definition ModuleParameterDef
 function validate_module.param(name, key, definition)
 	if type(key) ~= "string" then
-		error{"gui-errors.module-param-key", name, key}
+		error("The '%s' module's parameter keys should all be strings, not '%s'", name, serpent.block(key))
 	end
 	if type(definition) ~= "table" then
-		error{"gui-errors.module-param-value", name, key}
+		error("The '%s' module's '%s' parameter needs to be a table", name, key)
 	end
 	local optional = definition.is_optional
 	if type(optional) ~= "boolean" then
-		error{"gui-errors.module-param-optional", name, key}
+		error("The '%s' module's '%s' parameter needs to define `is_optional` with a boolean", name, key)
 	end
 
 	local valid_type_table = definition.type
 	if type(definition.type) ~= "table" then
-		error{"gui-errors.module-param-type", name, key}
+		error("The '%s' module's '%s' parameter need to define its type with an array", name, key)
 	end
 	local can_enum,valid_type_lookup = false,{}
 	for index, type_string in pairs(valid_type_table) do
 		if not valid_type_lookup[type_string] then
-			error{"gui-errors.module-param-invalid-type", name, key, index, type_string}
+			error("The '%s' module's '%s' parameter's type array has '%s', an invalid value, at index '%s'", name, key, type_string, serpent.dump(index))
 		end
 		if not can_enum and enum_type_lookup[type_string] then
 			can_enum = true
@@ -91,30 +94,31 @@ function validate_module.param(name, key, definition)
 
 	local enum,enum_values = definition.enum,{}
 	if not can_enum and enum then
-		error{"gui-errors.module-param-extra-enum", name, key}
+		error("The '%s' module's '%s' parameter has an enum when its types are not enumable", name, key)
 	else
 		if type(enum) ~= "table" then
-			error{"gui-errors.module-param-enum"}
+			error("The '%s' module's '%s' parameter's enum needs to be an array of values", name, key)
 		end
 
 		for index, value in pairs(enum) do
 			local value_type = type(value)
 			if not enum_type_lookup[value_type] or not valid_type_lookup[value_type] then
-				error{"gui-errors.module-param-invalid-enum", name, key, index, value_type}
+				error("The '%s' module's '%s' parameter's enum has an invalid value of type '%s' at index '%s'", name, key, value_type, serpent.dump(index))
 			end
 		end
 	end
 
 	local default = definition.default
 	if default and not optional then
-		error{"gui-errors.module-param-extra-default", name, key}
+		error("The '%s' module's '%s' parameter has a default when it's not nillable", name, key)
 	else
 		local default_type = type(default)
 		if not valid_type_lookup[default_type] then
+			error("The '%s' module's '%s' parameter has a default of an invalid type", name, key)
 			error{"gui-errors.module-param-invalid-default-type", name, key}
 		end
 		if enum and enum_type_lookup[default_type] then
-			error{"gui-errors.module-param-invalid-default-enum", name, key}
+			error("The '%s' module's '%s' parameter has a default not in the enum", name, key)
 		end
 	end
 end
@@ -122,11 +126,12 @@ end
 local prefix = "gui_module_add_"
 for name, setting in pairs(settings.startup) do
 	if name:find(prefix) then
-		local module_name = name:sub(prefix:len()+1)
+		local setting_name = name:sub(prefix:len()+1)
 		---@type GuiModuleDef
 		local module = require(setting.value --[[@as string]])
-		if module.module_type ~= module_name then
-			log{"gui-errors.different-expected-name", module_name, module.module_type}
+		local module_name = module.module_type
+		if module_name ~= module_name then
+			log(string.format("The '%s' module was expected to be named '%s' based on the setting name", module_name, setting_name))
 		end
 		validate_module.module(module_name, module)
 	end

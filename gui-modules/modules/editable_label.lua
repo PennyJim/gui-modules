@@ -32,8 +32,8 @@ module.parameters = {
 	-- Where gui-modules parameter definitons go
 	default_caption = {is_optional = false, type = {"string","table"}},
 	confirm_handler = {is_optional = true, type = {"string"}},
-	reserve_space = {is_optional = true, type = {"boolean"}},
-	include_icon_picker = {is_optional = true, type = {"boolean"}},
+	reserve_space = {is_optional = true, type = {"boolean"}, default = true},
+	include_icon_picker = {is_optional = true, type = {"boolean"}, default = false},
 	-- label values
 	caption = {is_optional = true, type = {"string","table"}},
 	style = {is_optional = true, type = {"string"}},

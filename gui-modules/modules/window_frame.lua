@@ -24,9 +24,9 @@ module.parameters = {
 	name = {is_optional = false, type = {"string"}},
 	title = {is_optional = false, type = {"string"}},
 	-- has_config_button = "boolean", -- TODO: add the necessary fields or split off into a separate module
-	has_pin_button = {is_optional = true, type = {"boolean"}},
-	has_close_button = {is_optional = true, type = {"boolean"}},
-	draggable = {is_optional = true, type = {"boolean"}},
+	has_pin_button = {is_optional = true, type = {"boolean"}, default = false},
+	has_close_button = {is_optional = true, type = {"boolean"}, default = false},
+	draggable = {is_optional = true, type = {"boolean"}, default = false},
 	children = {is_optional = false, type = {"table"}},
 	style = {is_optional = true, type = {"string"}},
 	style_mods = {is_optional = true, type = {"table"}},

@@ -16,6 +16,11 @@ local handler_names = {
 module.parameters = {
 	-- Where gui-modules parameter definitons go
 	my_parameter = {is_optional = false, type = {"string","table"}},
+	my_optional_parameter = {
+		is_optional = true, type = {"string"},
+		enum = {"one value","other value"},
+		default = "one value",
+	}
 }
 
 ---Creates the frame for a window with an exit button

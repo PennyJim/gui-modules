@@ -26,7 +26,8 @@
 ---@field is_optional boolean Whether or not this parameter is required
 ---@field type type[] The possible types of this parameter
 ---@field enum string[]? The possible values for a string
----@alias ModuleParameterDict {[string]:ModuleParameterDef}
+---@field default any The value that nil is treated as
+---@alias ModuleParameterDict table<string,ModuleParameterDef>
 
 ---@class GuiModuleDef
 ---@field module_type string the name of the module

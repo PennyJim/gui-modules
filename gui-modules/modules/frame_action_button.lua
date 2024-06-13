@@ -5,7 +5,7 @@ return {
 		name = {is_optional = false, type = {"string"}},
 		sprite = {is_optional = false, type = {"string"}},
 		tooltip = {is_optional = true, type = {"table","string"}},
-		handler = {is_optional = false, type = {"string"}}, -- The name of tthe handler
+		handler = {is_optional = true, type = {"string"}}, -- The name of the handler
 	},
 	build_func = function(params)
 		return {

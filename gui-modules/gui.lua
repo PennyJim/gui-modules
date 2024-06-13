@@ -259,11 +259,15 @@ end
 ---@param new_children GuiElemModuleDef
 ---@param do_not_copy boolean?
 function modules_gui.add(namespace, parent, new_children, do_not_copy)
-	if not do_not_copy then
-		new_children = table.deepcopy(new_children)
+	if not namespaces[namespace] then
+		error{"gui-errors.undefined-namespace"}
 	end
-	parse_children(namespace, new_children)
-	flib_gui.add(parent, new_children)
+	if not do_not_copy then
+		new_children = table.deepcopy(new_children) --[[@as GuiElemModuleDef]]
+	end
+	local result = {new_children}
+	parse_children(namespace, result)
+	flib_gui.add(parent, result[1])
 end
 
 ---Registers a namespace for use
@@ -350,7 +354,9 @@ function modules_gui.define_window(namespace, window_def, handlers)
 		end
 	end
 	gui_events.register(handlers, namespace, false)
-	parse_children(namespace, window_def.definition)
+	local results = {window_def.definition}
+	parse_children(namespace, results)
+	window_def.definition = results[1]
 end
 ---Creates a new namespace with the window definition
 ---@param window_def GuiWindowDef

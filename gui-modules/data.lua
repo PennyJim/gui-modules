@@ -90,7 +90,7 @@ function validate_module.param(name, key, definition)
 		valid_type_lookup[type_string] = true
 	end
 
-	local enum = definition.enum
+	local enum,enum_values = definition.enum,{}
 	if not can_enum and enum then
 		error{"gui-errors.module-param-extra-enum", name, key}
 	else
@@ -103,6 +103,19 @@ function validate_module.param(name, key, definition)
 			if not enum_type_lookup[value_type] or not valid_type_lookup[value_type] then
 				error{"gui-errors.module-param-invalid-enum", name, key, index, value_type}
 			end
+		end
+	end
+
+	local default = definition.default
+	if default and not optional then
+		error{"gui-errors.module-param-extra-default", name, key}
+	else
+		local default_type = type(default)
+		if not valid_type_lookup[default_type] then
+			error{"gui-errors.module-param-invalid-default-type", name, key}
+		end
+		if enum and enum_type_lookup[default_type] then
+			error{"gui-errors.module-param-invalid-default-enum", name, key}
 		end
 	end
 end

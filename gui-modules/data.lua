@@ -13,16 +13,16 @@ function validate_module.module(name, definition)
 
 	local build_func = definition.build_func
 	if not build_func or type(build_func) ~= "function" then
-		error({"gui-errors.needs-build-func", name}, 2)
+		error{"gui-errors.needs-build-func", name}
 	end
 	local handlers = definition.handlers
 	if not handlers or type(handlers) ~= "table" then
-		error({"gui-errors.needs-handler-table", name}, 2)
+		error{"gui-errors.needs-handler-table", name}
 	end
 	validate_module.handlers(name, handlers)
 	local parameters = definition.parameters
 	if not parameters or type(parameters) ~= "table" then
-		error({"gui-errors.needs-parameter-table", name}, 2)
+		error{"gui-errors.needs-parameter-table", name}
 	end
 end
 
@@ -32,7 +32,7 @@ end
 function validate_module.handlers(name, handlers)
 	for key, handler in pairs(handlers) do
 		if type(handler) ~= "function" then
-			error({"gui-errors.handler-function", name, key}, 3)
+			error{"gui-errors.handler-function", name, key}
 		end
 	end
 end

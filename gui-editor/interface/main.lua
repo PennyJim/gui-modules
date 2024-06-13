@@ -16,6 +16,9 @@ local visual_editor = {
 	namespace = "testing", version = 0,
 	shortcut = "visual-editor", custominput = "visual-editor",
 	root = "screen",
+	instances = {
+		filler = filler_child
+	},
 	definition = {
 		{
 			type = "module",

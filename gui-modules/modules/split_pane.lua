@@ -44,7 +44,7 @@ function module.build_func(params)
 
 	local children = {}
 	---@type LuaStyle?
-	local child_style_mod 
+	local child_style_mod
 	if params.stretch_panes ~= nil then
 		child_style_mod = {[params.direction.."ly_stretchable"] = params.stretch_panes}
 	end

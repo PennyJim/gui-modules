@@ -287,7 +287,7 @@ end
 ---Passing nil will unregister it
 ---@param namespace namespace
 ---@param shortcut string?
----@param skip_check boolean?
+---@param skip_check boolean? For internal use
 function modules_gui.register_shortcut(namespace, shortcut, skip_check)
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
@@ -298,7 +298,7 @@ end
 ---Passing nil will unregister it
 ---@param namespace namespace
 ---@param custominput string?
----@param skip_check boolean?
+---@param skip_check boolean? For internal use
 function modules_gui.register_custominput(namespace, custominput, skip_check)
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace-build"}
@@ -313,8 +313,9 @@ end
 ---@param namespace namespace
 ---@param instances table<string,GuiElemModuleDef>
 ---@param do_not_copy boolean?
-function modules_gui.register_instances(namespace, instances, do_not_copy)
-	if not namespaces[namespace] then
+---@param skip_check boolean? For internal use
+function modules_gui.register_instances(namespace, instances, do_not_copy, skip_check)
+	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
 	local registered_instances = instances[namespace]
@@ -335,7 +336,8 @@ end
 ---@param namespace namespace
 ---@param window_def GuiWindowDef
 ---@param handlers GuiModuleEventHandlers?
-function modules_gui.define_window(namespace, window_def, handlers)
+---@param instances table<string,GuiElemModuleDef>?
+function modules_gui.define_window(namespace, window_def, handlers, instances)
 	-- Either create new namespace, or update missing values
 	if not namespaces[namespace] then
 		modules_gui.new_namespace(namespace)
@@ -375,6 +377,12 @@ function modules_gui.define_window(namespace, window_def, handlers)
 		end
 	end
 	gui_events.register(handlers, namespace, false)
+
+	modules_gui.register_instances(namespace, window_def.instances, true, true)
+	if instances then
+		modules_gui.register_instances(namespace, instances, false, true)
+	end
+
 	local results = {window_def.definition}
 	parse_children(namespace, results)
 	window_def.definition = results[1]
@@ -382,14 +390,15 @@ end
 ---Creates a new namespace with the window definition
 ---@param window_def GuiWindowDef
 ---@param handlers GuiModuleEventHandlers?
+---@param instances table<string,GuiElemModuleDef>?
 ---@param shortcut_name string?
 ---@param custominput_name string?
-function modules_gui.new(window_def, handlers, shortcut_name, custominput_name)
+function modules_gui.new(window_def, handlers, instances, shortcut_name, custominput_name)
 	local namespace = window_def.namespace
 	modules_gui.new_namespace(namespace)
 	modules_gui.register_shortcut(namespace, shortcut_name, true)
 	modules_gui.register_custominput(namespace, custominput_name, true)
-	modules_gui.define_window(namespace, window_def, handlers)
+	modules_gui.define_window(namespace, window_def, handlers, instances)
 end
 
 return modules_gui

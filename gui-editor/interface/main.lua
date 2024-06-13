@@ -114,5 +114,5 @@ local test = {
 	}
 }--[[@as GuiWindowDef]]
 
-gui.new(visual_editor)(test_handlers)
+-- gui.new(visual_editor)(test_handlers)
 -- gui.new(test)(test_handlers)

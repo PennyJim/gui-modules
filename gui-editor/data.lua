@@ -17,5 +17,16 @@ data:extend{
 			mipmap_count = iron_gear.icon_mipmaps,
 		},
 		toggleable = true,
+	},
+	{
+		type = "shortcut",
+		name = "visual-editor2",
+		action = "lua",
+		icon = {
+			filename = iron_gear.icon,
+			size = iron_gear.icon_size,
+			mipmap_count = iron_gear.icon_mipmaps,
+		},
+		toggleable = true,
 	}
 }

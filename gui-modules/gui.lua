@@ -206,7 +206,7 @@ function modules_gui.new_namespace(namespace, depth)
 		error({"gui-errors.invalid-namespace", namespace, namespace:match("/")}, depth)
 	end
 	if definitions[namespace] then
-		error({"gui-errors.namespace-already-defined", namespace}, depth)
+		error({"gui-errors.namespace-already-registered", namespace}, depth)
 	end
 	global[namespace] = global[namespace] or {}
 	namespaces[namespace] = true
@@ -259,6 +259,9 @@ function modules_gui.define_window(namespace, window_def, handlers, depth)
 		if not custominput_namespace[namespace] then
 			modules_gui.register_custominput(namespace, window_def.custominput, depth)
 		end
+	end
+	if definitions[namespace] then
+		error({"gui-errors.namespace-already-defined", namespace}, depth)
 	end
 	definitions[namespace] = window_def
 

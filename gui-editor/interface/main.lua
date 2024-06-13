@@ -50,7 +50,8 @@ local visual_editor = {
 										} --[[@as EditableLabelDef]],
 										{
 											type = "empty-widget", style = "flib_horizontal_pusher"
-										}
+										},
+										{ type = "instantiable", instantiable_name = "test-instance"}
 									}
 								},
 								{

@@ -3,9 +3,10 @@
 ---@alias namespace string
 
 ---@class GuiElemModuleDef : GuiElemDef
----@field type GuiElementType|"module"
+---@field type GuiElementType|"module"|"instantiable"
 ---@field children GuiElemModuleDef[]?
 ---@field module_type string? The name of the module
+---@field instantiable_name string? The name of the instantiable
 ---@field handler GuiModuleEventHandlerNames?
 
 ---@class GuiWindowDef

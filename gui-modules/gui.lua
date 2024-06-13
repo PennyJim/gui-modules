@@ -32,6 +32,8 @@ local definitions = {} -- the definitions for each namespace
 local shortcut_namespace = {} -- map from shortcut names to namespace 
 ---@type table<string,namespace>
 local custominput_namespace = {} -- map from custominput event names to namespace
+---@type table<namespace,table<string,GuiElemModuleDef>>
+local instances = {}
 
 --#region Standard Event Handlers
 
@@ -133,18 +135,35 @@ modules_gui.events[defines.events.on_player_removed] = removed_player_handler
 modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 --#endregion
 
-
+---Resolve the instantiable into a GuiElemModuleDef
+---@param namespace namespace
+---@param arr GuiElemModuleDef[]
+---@param index integer
+---@param child GuiElemModuleDef
+---@param depth integer
+---@return GuiElemModuleDef
+local function resolve_instantiable(namespace, arr, index, child, depth)
+	if child.type ~= "instantiable" then return child end
+	local instance = instances[namespace][child.instantiable_name]
+	if not instance then
+		error({"gui-errors.invalid-instantiable", namespace, child}, depth)
+	end
+	arr[index] = instance
+	return instance
+end
 ---Expands the module into their elements
 ---@param namespace namespace
 ---@param arr GuiElemModuleDef[]
 ---@param index integer
 ---@param child GuiElemModuleDef
+---@param depth integer
 ---@return GuiElemModuleDef
-local function expand_module(namespace, arr, index, child)
+local function expand_module(namespace, arr, index, child, depth)
 	if child.type ~= "module" then return child end -- Skip if not module
+	depth = depth + 1
 	local mod_type = child.module_type
 	if not mod_type then 
-		error({"gui-errors.no-module-name"})
+		error({"gui-errors.no-module-name"}, depth)
 	end
 
 	local module = modules[mod_type]
@@ -156,12 +175,15 @@ local function expand_module(namespace, arr, index, child)
 	arr[index] = new_child
 	return new_child
 end
----Go over every element and expand modules and prepend the namespace to handlers
+---Go over every element and preprocess it for use in flib_gui
 ---@param namespace namespace
 ---@param definition GuiElemModuleDef[]
-local function parse_children(namespace, definition)
+---@param depth integer
+local function parse_children(namespace, definition, depth)
+	depth = depth + 1
 	for child_array, index, child in every_child(definition) do
-		child = expand_module(namespace, child_array, index, child)
+		child = resolve_instantiable(namespace, child_array, index, child, depth)
+		child = expand_module(namespace, child_array, index, child, depth)
 		gui_events.convert_handler_names(namespace, child)
 	end
 end
@@ -195,7 +217,6 @@ function build(player, namespace)
 
 	return self
 end
--- flib_gui.handle_events() -- flib resolves functions to names and and wraps it in a separate lookup table. It's evil >:(
 
 ---Registers a namespace for use
 ---@param namespace namespace
@@ -209,6 +230,7 @@ function modules_gui.new_namespace(namespace, depth)
 		error({"gui-errors.namespace-already-registered", namespace}, depth)
 	end
 	global[namespace] = global[namespace] or {}
+	instances[namespace] = {}
 	namespaces[namespace] = true
 end
 ---Registers the shortcut with the window in the namespace.
@@ -286,7 +308,7 @@ function modules_gui.define_window(namespace, window_def, handlers, depth)
 		end
 	end
 	gui_events.register(handlers, namespace, false)
-	parse_children(namespace, window_def.definition)
+	parse_children(namespace, window_def.definition, depth)
 end
 ---Creates a new namespace with the window definition
 ---@param window_def GuiWindowDef

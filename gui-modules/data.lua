@@ -55,6 +55,9 @@ end
 ---@param handlers GuiModuleEventHandlers
 function validate_module.handlers(name, handlers)
 	for key, handler in pairs(handlers) do
+		if type(key) == "table" then
+			error("The '%s' module has a table for its handler key. That is unusable", name)
+		end
 		if type(handler) ~= "function" then
 			error("The '%s' module has a non-function as its handler for '%s'", name, key)
 		end
@@ -130,6 +133,9 @@ for name, setting in pairs(settings.startup) do
 		---@type GuiModuleDef
 		local module = require(setting.value --[[@as string]])
 		local module_name = module.module_type
+		if type(module_name) ~= "string" then
+			error("%s's module is missing a valid name", name)
+		end
 		if module_name ~= module_name then
 			log(string.format("The '%s' module was expected to be named '%s' based on the setting name", module_name, setting_name))
 		end

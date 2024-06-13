@@ -23,11 +23,13 @@ module.parameters = {
 -- Strictly speaking, this does not test every case so
 -- bugs may sneak through, but this should catch most
 
+module.module_type = {} -- Not a string
 module.module_type = "window_frame" -- Pre-existing module
 module.build_func = "not-a-function"
 module.handlers = "not-a-table"
 module.parameters = "not-a-table"
 
+module.handlers[{}] = "This is really stupid, but I just *know* someone is going to do it. I __refuse__ to let that happen"
 module.handlers.bad_handler = "not-a-function"
 
 module.parameters[1] = "not-string-key"
@@ -36,7 +38,7 @@ module.parameters.my_parameter.is_optional = "not-a-boolean"
 module.parameters.my_parameter.type = "not-a-table"
 module.parameters.my_parameter.type[1] = "not-a-type"
 
-module.parameters.my_parameter.enum = {}
+module.parameters.my_parameter.enum = {} -- Isn't enumable
 module.parameters.my_enum_parameter.enum = "not-a-table"
 module.parameters.my_enum_parameter.enum[1] = 1 -- Not a string
 

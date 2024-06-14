@@ -284,30 +284,26 @@ function modules_gui.new_namespace(namespace)
 	namespaces[namespace] = true
 end
 ---Registers the shortcut with the window in the namespace.
----Passing nil will unregister it
 ---@param namespace namespace
----@param shortcut string?
+---@param shortcut string
 ---@param skip_check boolean? For internal use
 function modules_gui.register_shortcut(namespace, shortcut, skip_check)
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
-	shortcut_namespace[namespace] = shortcut
+	shortcut_namespace[shortcut] = namespace
 end
 ---Registers the custominput with the window in the namespace.
----Passing nil will unregister it
 ---@param namespace namespace
----@param custominput string?
+---@param custominput string
 ---@param skip_check boolean? For internal use
 function modules_gui.register_custominput(namespace, custominput, skip_check)
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace-build"}
 	end
-	custominput_namespace[namespace] = custominput
-	if custominput then
-		modules_gui.events[custominput] = input_or_shortcut_handler
-		custominput_namespace[namespace] = custominput
-	end
+
+	modules_gui.events[custominput] = input_or_shortcut_handler
+	custominput_namespace[custominput] = namespace
 end
 ---Registers the instance for use in the window's construction
 ---@param namespace namespace
@@ -341,16 +337,17 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	-- Either create new namespace, or update missing values
 	if not namespaces[namespace] then
 		modules_gui.new_namespace(namespace)
-		modules_gui.register_shortcut(namespace, window_def.shortcut, true)
-		modules_gui.register_custominput(namespace, window_def.custominput, true)
-	else
-		if not shortcut_namespace[namespace] then
-			modules_gui.register_shortcut(namespace, window_def.shortcut, true)
-		end
-		if not custominput_namespace[namespace] then
-			modules_gui.register_custominput(namespace, window_def.custominput, true)
-		end
 	end
+
+	local shortcut = window_def.shortcut
+	if shortcut and not shortcut_namespace[shortcut] then
+		modules_gui.register_shortcut(namespace, shortcut, true)
+	end
+	local custominput = window_def.custominput
+	if custominput and not custominput_namespace[custominput] then
+		modules_gui.register_custominput(namespace, custominput, true)
+	end
+
 	if definitions[namespace] then
 		error{"gui-errors.namespace-already-defined", namespace}
 	end

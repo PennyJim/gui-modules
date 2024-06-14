@@ -307,15 +307,15 @@ function modules_gui.register_custominput(namespace, custominput, skip_check)
 end
 ---Registers the instance for use in the window's construction
 ---@param namespace namespace
----@param instances table<string,GuiElemModuleDef>
+---@param new_instances table<string,GuiElemModuleDef>
 ---@param do_not_copy boolean?
 ---@param skip_check boolean? For internal use
-function modules_gui.register_instances(namespace, instances, do_not_copy, skip_check)
+function modules_gui.register_instances(namespace, new_instances, do_not_copy, skip_check)
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
 	local registered_instances = instances[namespace]
-	for name, instance in pairs(instances) do
+	for name, instance in pairs(new_instances) do
 		if registered_instances[name] then
 			error{"gui-errors.instance-already-defined", namespace, name}
 		end
@@ -375,9 +375,12 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	end
 	gui_events.register(handlers, namespace, false)
 
-	modules_gui.register_instances(namespace, window_def.instances, true, true)
 	if instances then
 		modules_gui.register_instances(namespace, instances, false, true)
+	end
+	instances = window_def.instances
+	if instances then
+		modules_gui.register_instances(namespace, instances, true, true)
 	end
 
 	local results = {window_def.definition}
@@ -393,8 +396,12 @@ end
 function modules_gui.new(window_def, handlers, instances, shortcut_name, custominput_name)
 	local namespace = window_def.namespace
 	modules_gui.new_namespace(namespace)
-	modules_gui.register_shortcut(namespace, shortcut_name, true)
-	modules_gui.register_custominput(namespace, custominput_name, true)
+	if shortcut_name then
+		modules_gui.register_shortcut(namespace, shortcut_name, true)
+	end
+	if custominput_name then
+		modules_gui.register_custominput(namespace, custominput_name, true)
+	end
 	modules_gui.define_window(namespace, window_def, handlers, instances)
 end
 

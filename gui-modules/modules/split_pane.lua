@@ -46,6 +46,7 @@ function module.build_func(params)
 	---@type LuaStyle?
 	local child_style_mod
 	if params.stretch_panes ~= nil then
+---@diagnostic disable-next-line: missing-fields
 		child_style_mod = {[params.direction.."ly_stretchable"] = params.stretch_panes}
 	end
 	for i = 1, panes, 1 do

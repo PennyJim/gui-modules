@@ -13,7 +13,7 @@ local test_handlers = {
 }
 
 local visual_editor = {
-	namespace = "testing", version = 0,
+	namespace = "visual-editor", version = 0,
 	shortcut = "visual-editor", custominput = "visual-editor",
 	root = "screen",
 	instances = {
@@ -22,7 +22,7 @@ local visual_editor = {
 	definition = {
 		type = "module",
 		module_type = "window_frame",
-		name = "testing", title = "GUI Editor",
+		name = "visual_editor", title = "GUI Editor",
 		has_close_button = true, draggable = false,
 ---@diagnostic disable-next-line: missing-fields
 		style_mods = {natural_height = 10000, natural_width = 10000},
@@ -53,7 +53,7 @@ local visual_editor = {
 									{
 										type = "empty-widget", style = "flib_horizontal_pusher"
 									},
-									{ type = "instantiable", instantiable_name = "test-instance"}
+									{ type = "instantiable", instantiable_name = "filler"}
 								}
 							},
 							{
@@ -93,7 +93,7 @@ local visual_editor = {
 
 local test = {
 	namespace = "testing", version = 0,
-	shortcut = "visual-editor", custominput = "visual-editor",
+	shortcut = "visual-editor",
 	root = "screen",
 	definition = {
 		type = "module", module_type = "window_frame",
@@ -113,5 +113,5 @@ local test = {
 	} --[[@as WindowFrameButtonsDef]]
 }--[[@as GuiWindowDef]]
 
--- gui.new(visual_editor)(test_handlers)
--- gui.new(test)(test_handlers)
+gui.new(visual_editor, test_handlers)
+gui.new(test, test_handlers, nil, "visual-editor2")

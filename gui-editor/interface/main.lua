@@ -3,6 +3,7 @@ local gui = require("__gui-modules__.gui")
 ---@type GuiElemModuleDef
 local filler_child = {
 	type = "label", caption = "Filler",
+---@diagnostic disable-next-line: missing-fields
 	style_mods = {height = 400, width = 100}
 }--[[@as GuiElemModuleDef]]
 local test_handlers = {
@@ -38,37 +39,88 @@ local visual_editor = {
 				},
 				panes = {
 					{
-						type = "flow", direction = "vertical",
----@diagnostic disable-next-line: missing-fields
-						style_mods = {vertically_stretchable = true, vertical_spacing = 0},
+						type = "frame", style = "inside_deep_frame_for_tabs",
 						children = {
 							{
-								type = "frame", style = "subheader_frame",
+								type = "tabbed-pane",
 								children = {
+---@diagnostic disable-next-line: missing-fields
 									{
-										type = "module", module_type = "editable_label",
-										default_caption = "Root", confirm_handler = "test_handler",
-										style = "subheader_caption_label",
-									} --[[@as EditableLabelDef]],
-									{
-										type = "empty-widget", style = "flib_horizontal_pusher"
+										tab = {
+											type = "tab", caption = "Window"
+										},
+										content = {
+											type = "frame",
+											style = "window_content_frame_in_tabbed_panne",
+											children = {
+												type = "flow", direction = "vertical",
+---@diagnostic disable-next-line: missing-fields
+												style_mods = {vertically_stretchable = true, vertical_spacing = 0},
+												children = {
+													{
+														type = "scroll-pane",
+														style = "scroll_pane_with_dark_background_under_subheader",
+---@diagnostic disable-next-line: missing-fields
+														style_mods = {vertically_stretchable = true, width = 400},
+														-- style = "train_schedule_scroll_pane",
+														children = {
+															{
+																type = "frame", style = "train_schedule_station_frame",
+																children = {
+																	{
+																		type = "button", style = "train_schedule_action_button"
+																	},
+																	{
+																		type = "label", caption = "Name::Module:module_type", -- TODO: split into 2 labels
+																	},
+																	{
+																		type = "empty-widget", style = "flib_horizontal_pusher"
+																	},
+																	{
+																		type = "empty-widget", style = "draggable_space_in_train_schedule",
+---@diagnostic disable-next-line: missing-fields
+																		style_mods = {vertically_stretchable = true}
+																	},
+																	{
+																		type = "button", style = "train_schedule_delete_button"
+																	}
+																}
+															},
+															{type = "instantiable", instantiable_name = "filler"},
+															{type = "instantiable", instantiable_name = "filler"},
+															{type = "instantiable", instantiable_name = "filler"},
+															{type = "instantiable", instantiable_name = "filler"},
+															{type = "instantiable", instantiable_name = "filler"},
+														}
+													}
+												}
+											}
+										},
 									},
-									{ type = "instantiable", instantiable_name = "filler"}
+---@diagnostic disable-next-line: missing-fields
+									{
+										tab = {
+											type = "tab", caption = "instances"
+										},
+										content = {
+											type = "frame",
+											style = "window_content_frame_in_tabbed_panne",
+											children = {
+												{
+													type = "flow", direction = "vertical",
+													children = {
+														{type = "instantiable", instantiable_name = "filler"},
+														{type = "instantiable", instantiable_name = "filler"},
+														{type = "instantiable", instantiable_name = "filler"},
+														{type = "instantiable", instantiable_name = "filler"},
+														{type = "instantiable", instantiable_name = "filler"},
+													}
+												},
+											}
+										}
+									}
 								}
 							},
-							{
-								type = "scroll-pane", 
-								style = "scroll_pane_with_dark_background_under_subheader",
-								style_mods = {vertically_stretchable = true, width = 300},
-								-- style = "train_schedule_scroll_pane",
-								children = {
-									{type = "instantiable", instantiable_name = "filler"},
-									{type = "instantiable", instantiable_name = "filler"},
-									{type = "instantiable", instantiable_name = "filler"},
-									{type = "instantiable", instantiable_name = "filler"},
-									{type = "instantiable", instantiable_name = "filler"},
-								}
-							}
 						}
 					},
 					{
@@ -106,6 +158,7 @@ local test = {
 				include_icon_picker = true,
 				caption = "Named Label",
 				style = "subheader_caption_label",
+---@diagnostic disable-next-line: missing-fields
 				style_mods = {width = 100},
 				tooltip = "You can edit this!",
 			} --[[@as EditableLabelDef]]

@@ -2,7 +2,10 @@
 Version: 0.0.2
 Date: ????
   Changes:
+    - namespace and a reference to the library are now found in the state
     - Modules can now initalise their state in self with self_init
+  Bugfixes:
+    - window_frame can actually take localized strings like intended
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2024-07-01

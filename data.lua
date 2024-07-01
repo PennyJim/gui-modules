@@ -36,6 +36,9 @@ function validate_module.module(name, definition)
 	if type(definition.build_func) ~= "function" then
 		error("The '%s' module needs a `build_func`", name)
 	end
+	if definition.self_init and type(definition.self_init) ~= "function" then
+		error("The '%s' module's state initialization needs to be a function", name)
+	end
 	local handlers = definition.handlers
 	if type(handlers) ~= "table" then
 		error("The '%s' module needs a handler table, even if it's empty", name)

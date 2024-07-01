@@ -2,6 +2,7 @@
 Version: 0.0.2
 Date: ????
   Changes:
+    - Modules can now initalise their state in self with self_init
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2024-07-01

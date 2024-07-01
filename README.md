@@ -1,8 +1,10 @@
-# Visual Editor + Gui Modules
-A pair of mods that are intended to be used to generate a string that the latter can build an interface out of
+# Gui Modules
+This is a library mod that was built for use with a gui-editor.
+I got tired of not being able to use features I built into this, simply because I got stuck on a structural issue with its use with the editor.
 
+Just as a warning to anyone who uses it:
 
-### Todo
-- [X]: Change how events are registered to be compatibile with a users's own registered events
-- [ ]: Provide 'instantiable' elements functionality
-- [ ]: Use Informatron/Tips and Tricks to make documentation
+# <span style="color:red">__USAGE IS SUBJECT TO CHANGE!__</span>
+This is why I am not providing any documentation yet.
+
+If you _are_ going to use it, depend on a specific version.

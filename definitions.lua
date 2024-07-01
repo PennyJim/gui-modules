@@ -20,7 +20,7 @@
 ---@field custominput string?
 ---@field shortcut string?
 
----@alias GuiModuleEventHandler fun(self:WindowState,elem:LuaGuiElement,event:GuiEventData,namespace:string):LuaGuiElement?,any?
+---@alias GuiModuleEventHandler fun(self:WindowState,elem:LuaGuiElement,event:GuiEventData):LuaGuiElement?,any?
 ---@alias GuiModuleEventHandlers table<any, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlerNames string|table<defines.events,string>
@@ -41,9 +41,11 @@
 
 ---@class WindowState
 ---@field root LuaGuiElement the root element
+---@field namespace namespace the namepsace of this state
 ---@field elems table<string,LuaGuiElement> the named elements
 ---@field player LuaPlayer the owner of the window
 ---@field pinned boolean Whether or not the window has been pinned
 ---@field pinning boolean? Whether or not to pass the close event to an opened subelement
 ---@field shortcut string? The registered shortcut for the window
 ---@field opened LuaGuiElement? Should be set when subelements are opened. So the main element can close them instead
+---@field gui ModuleGuiLib A reference to the library table meant to be used in creation of new elements

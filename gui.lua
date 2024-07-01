@@ -2,6 +2,7 @@
 if ... ~= "__gui-modules__.gui" then
 	return require("__gui-modules__.gui")
 end
+---@class ModuleGuiLib
 modules_gui = {}
 
 ---@type flib_gui
@@ -237,7 +238,9 @@ function build(player, namespace)
 		elems = elems,
 		player = player,
 		pinned = false,
-		shortcut = info.shortcut
+		shortcut = info.shortcut,
+		gui = modules_gui,
+		namespace = namespace
 	}
 	global[namespace][player.index] = self
 	-- TODO: initialize windowstate values defined in `info`

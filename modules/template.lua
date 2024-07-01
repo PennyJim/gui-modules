@@ -31,8 +31,8 @@ function module.build_func(params)
 end
 
 -- How to define handlers
----@param self WindowState.editable_label
-module.handlers[handler_names.my_handler] = function (self, elem, OriginalEvent, namespace)
+---@param self WindowState.my_module
+module.handlers[handler_names.my_handler] = function (self, elem, OriginalEvent)
 	-- Do stuff
 end
 

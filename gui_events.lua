@@ -18,7 +18,7 @@ local function event_wrapper(namespace, handler, elem, e)
 		return
 	end
 
-	local new_elem, new_event = handler(self, elem, e, namespace)
+	local new_elem, new_event = handler(self, elem, e)
 	if new_elem or new_event then
 		new_elem = new_elem or elem
 		gui_events.dispatch_specific(new_elem, new_event, e)

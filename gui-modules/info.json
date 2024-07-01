@@ -2,11 +2,16 @@
 	"name": "gui-modules",
 	"title": "GUI Modules",
 	"description": "A Gui library that allows defining custom elements (modules) that handle basic events",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"author": "PennyJim",
 	"factorio_version": "1.1",
 	"dependencies": [
 		"base",
 		"flib"
-	]
+	],
+
+	"package": {
+		"readme": "README.md",
+		"sync_portal_details": true
+	}
 }

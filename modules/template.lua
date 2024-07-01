@@ -3,6 +3,12 @@ local module = {module_type = "my_module", handlers = {} --[[@as GuiModuleEventH
 ---@class WindowState.my_module : WindowState
 -- Where custom fields would go
 
+---WindowState.my_module
+---@param self table
+module.self_init = function(self)
+	-- Setup your on fields here
+end
+
 local handler_names = {
 	-- A generic place to make sure handler names match
 	-- in both handler definitons and in the build_func

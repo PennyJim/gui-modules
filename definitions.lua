@@ -35,6 +35,7 @@
 
 ---@class GuiModuleDef
 ---@field module_type string the name of the module
+---@field self_init fun(self:WindowState) The function to setup self values used in this module
 ---@field build_func fun(parameters:table):GuiElemModuleDef the function to return a GuiElemDef out of the passed definition
 ---@field parameters ModuleParameterDict a table defining the possible parameters of the module
 ---@field handlers GuiModuleEventHandlers the handlers the module uses.

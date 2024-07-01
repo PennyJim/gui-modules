@@ -242,6 +242,12 @@ function build(player, namespace)
 		gui = modules_gui,
 		namespace = namespace
 	}
+	for _, module in pairs(modules) do
+		local init = module.self_init
+		if init then
+			init(self)
+		end
+	end
 	global[namespace][player.index] = self
 	-- TODO: initialize windowstate values defined in `info`
 

@@ -35,6 +35,8 @@ local shortcut_namespace = {} -- map from shortcut names to namespace
 local custominput_namespace = {} -- map from custominput event names to namespace
 ---@type table<namespace,table<string,GuiElemModuleDef>>
 local instances = {}
+---@type table<namespace,fun(state:WindowState)>
+local state_setups = {}
 
 --#region Standard Event Handlers
 
@@ -129,6 +131,24 @@ function input_or_shortcut_handler(EventData)
 
 	standard_handlers.toggle(self)
 end
+---Mentions when this library has changed (potentially breaking)
+---@param ChangedData ConfigurationChangedData
+function configuation_changed_handler(ChangedData)
+	local library_changed = ChangedData.mod_changes["gui-modules"]
+	if library_changed and library_changed.old_version ~= nil then
+		game.print("Gui Modules has changed version! This library is still in beta and may have had breaking changes")
+	end
+
+	for _, namespace in pairs(namespaces) do
+		---@type table<integer,WindowState>
+		local namespace_states = global[namespace]
+
+		for index in game.players do
+			local state = namespace_states[index]
+			setup_state(state)
+		end
+	end
+end
 
 modules_gui.events = gui_events.events
 modules_gui.events[defines.events.on_player_created] = created_player_handler
@@ -216,6 +236,24 @@ local function parse_children(namespace, children)
 	end
 end
 
+---Sets up the state using all setup functions
+---Given by modules and associated with namespace
+---@param state any
+local function setup_state(state)
+	-- Modules
+	for _, module in pairs(modules) do
+		local init = module.setup_state
+		if init then
+			init(state)
+		end
+	end
+
+	-- Namespace
+	local init = state_setups[state.namespace]
+	if init then
+		init(state)
+	end
+end
 
 ---Builds the gui in the namespace for the given player
 ---@param player LuaPlayer
@@ -242,12 +280,7 @@ function build(player, namespace)
 		gui = modules_gui,
 		namespace = namespace
 	}
-	for _, module in pairs(modules) do
-		local init = module.self_init
-		if init then
-			init(self)
-		end
-	end
+	setup_state(self)
 	global[namespace][player.index] = self
 	-- TODO: initialize windowstate values defined in `info`
 
@@ -336,6 +369,16 @@ function modules_gui.register_instances(namespace, new_instances, do_not_copy, s
 		registered_instances[name] = result[1]
 	end
 end
+---Registers the WindowState setup function
+---@param namespace namespace
+---@param state_setup fun(state:WindowState)
+---@param skip_check boolean? for internal use
+function modules_gui.register_state_setup(namespace, state_setup, skip_check)
+	if not skip_check and not namespaces[namespace] then
+		error{"gui-errors.undefined-namespace"}
+	end
+	state_setups[namespace] = state_setup
+end
 
 ---Defines the window of the namespace
 ---@param namespace namespace
@@ -396,22 +439,28 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	parse_children(namespace, results)
 	window_def.definition = results[1]
 end
+---@class newWindowParams
+---@field window_def GuiWindowDef
+---@field handlers GuiModuleEventHandlers?
+---@field instances table<string,GuiElemModuleDef>?
+---@field shortcut_name string?
+---@field custominput_name string?
+---@field state_setup fun(state:WindowState)?
 ---Creates a new namespace with the window definition
----@param window_def GuiWindowDef
----@param handlers GuiModuleEventHandlers?
----@param instances table<string,GuiElemModuleDef>?
----@param shortcut_name string?
----@param custominput_name string?
-function modules_gui.new(window_def, handlers, instances, shortcut_name, custominput_name)
-	local namespace = window_def.namespace
+---@param params newWindowParams
+function modules_gui.new(params)
+	local namespace = params.window_def.namespace
 	modules_gui.new_namespace(namespace)
-	if shortcut_name then
-		modules_gui.register_shortcut(namespace, shortcut_name, true)
+	if params.shortcut_name then
+		modules_gui.register_shortcut(namespace, params.shortcut_name, true)
 	end
-	if custominput_name then
-		modules_gui.register_custominput(namespace, custominput_name, true)
+	if params.custominput_name then
+		modules_gui.register_custominput(namespace, params.custominput_name, true)
 	end
-	modules_gui.define_window(namespace, window_def, handlers, instances)
+	if params.state_setup then
+		modules_gui.register_state_setup(namespace, params.state_setup, true)
+	end
+	modules_gui.define_window(namespace, params.window_def, params.handlers, params.instances)
 end
 
 return modules_gui

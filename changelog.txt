@@ -3,7 +3,15 @@ Version: 0.0.2
 Date: ????
   Changes:
     - namespace and a reference to the library are now found in the state
-    - Modules can now initalise their state in self with self_init
+    - Modules can now setup their values in the window state with setup_state
+    - The user can now setup their values in the window state with register_state_setup
+    - the new function now takes a table of parameters
+      * window_def = the regular definition
+      * handlers? = The event handlers
+      * instances? = Instance definitions (Currently thinking of changing)
+      * shortcut_name? = The name of a shortcut to open/close this window
+      * custominput_name? = The custominput to open/close this window
+      * state_setup? = the function to setup the values you need in state
   Bugfixes:
     - window_frame can actually take localized strings like intended
 ---------------------------------------------------------------------------------------------------

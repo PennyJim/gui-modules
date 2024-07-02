@@ -110,6 +110,7 @@ function gui_events.convert_handler_names(namespace, child)
 	child.handler = nil
 end
 
+---@type event_handler.events
 gui_events.events = {}
 for name, id in pairs(defines.events) do
   if string.find(name, "on_gui_") then

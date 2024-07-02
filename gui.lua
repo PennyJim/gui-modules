@@ -2,7 +2,7 @@
 if ... ~= "__gui-modules__.gui" then
 	return require("__gui-modules__.gui")
 end
----@class ModuleGuiLib
+---@class ModuleGuiLib : event_handler
 modules_gui = {}
 
 ---@type flib_gui
@@ -228,7 +228,7 @@ end
 
 ---Handles the creation of new players
 ---@param EventData EventData.on_player_created
-function created_player_handler(EventData)
+local function created_player_handler(EventData)
 	local player = game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
@@ -238,7 +238,7 @@ function created_player_handler(EventData)
 end
 ---Handles the removal of players
 ---@param EventData EventData.on_player_removed
-function removed_player_handler(EventData)
+local function removed_player_handler(EventData)
 	for namespace in pairs(definitions) do
 		global[namespace][EventData.player_index] = nil
 	end
@@ -246,7 +246,7 @@ end
 ---Opens the element of the player that this event sourced from.
 ---Will create a new one if one isn't found
 ---@param EventData EventData.CustomInputEvent|EventData.on_lua_shortcut
-function input_or_shortcut_handler(EventData)
+local function input_or_shortcut_handler(EventData)
 	local namespace
 	if EventData.input_name then
 		namespace = custominput_namespace[EventData.input_name]

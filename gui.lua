@@ -38,123 +38,7 @@ local instances = {}
 ---@type table<namespace,fun(state:WindowState)>
 local state_setups = {}
 
---#region Standard Event Handlers
-
---- The function called to close the window
----@param self WindowState
-function standard_handlers.close(self)
-	if self.pinning then
-		self.pinning = nil
-		self.player.opened = self.opened
-		return
-	elseif self.opened then
-		if self.player.opened then
-			standard_handlers.hide(self)
-		else
-			self.player.opened = self.root
-		end
-		return self.opened, defines.events.on_gui_closed
-  end
-	standard_handlers.hide(self)
-end
----The function called by closing the window
----@param self WindowState
-function standard_handlers.hide(self)
-	if self.player.opened == self.root then
-		self.player.opened = nil -- Clear it from opened if hidden while still opened
-		return -- Return because it'll call close, which calls hide again
-	end
-	self.root.visible = false
-	if self.shortcut then -- Update registred shortcut
-		self.player.set_shortcut_toggled(self.shortcut, false)
-	end
-end
----@param self WindowState
-function standard_handlers.show(self)
-	self.root.visible = true
-	if self.shortcut then -- Update registred shortcut
-		self.player.set_shortcut_toggled(self.shortcut, true)
-	end
-	-- Focus something if it should be focused by default
-  if not self.pinned then
-    self.player.opened = self.root
-  end
-end
----@param self WindowState
----@return boolean
-function standard_handlers.toggle(self)
-	if self.root.visible then
-		standard_handlers.hide(self)
-	else
-		standard_handlers.show(self)
-	end
-	return self.root.visible
-end
---#endregion
---#region Generic Event Handlers
-
----Handles the creation of new players
----@param EventData EventData.on_player_created
-function created_player_handler(EventData)
-	local player = game.get_player(EventData.player_index)
-	if not player then return end -- ??
-
-	for name_space in pairs(definitions) do
-		build(player, name_space)
-	end
-end
----Handles the removal of players
----@param EventData EventData.on_player_removed
-function removed_player_handler(EventData)
-	for namespace in pairs(definitions) do
-		global[namespace][EventData.player_index] = nil
-	end
-end
----Opens the element of the player that this event sourced from.
----Will create a new one if one isn't found
----@param EventData EventData.CustomInputEvent|EventData.on_lua_shortcut
-function input_or_shortcut_handler(EventData)
-	local namespace
-	if EventData.input_name then
-		namespace = custominput_namespace[EventData.input_name]
-	else
-		namespace = shortcut_namespace[EventData.prototype_name]
-	end
-	if not namespace then return end -- Not one we've been told to handle
-	local player = game.get_player(EventData.player_index)
-	if not player then return end -- ??
-
-	local self = global[namespace][player.index]
-	if not self or not self.root.valid then
-		self = build(player, namespace)
-	end
-
-	standard_handlers.toggle(self)
-end
----Mentions when this library has changed (potentially breaking)
----@param ChangedData ConfigurationChangedData
-function configuation_changed_handler(ChangedData)
-	local library_changed = ChangedData.mod_changes["gui-modules"]
-	if library_changed and library_changed.old_version ~= nil then
-		game.print("Gui Modules has changed version! This library is still in beta and may have had breaking changes")
-	end
-
-	for _, namespace in pairs(namespaces) do
-		---@type table<integer,WindowState>
-		local namespace_states = global[namespace]
-
-		for index in game.players do
-			local state = namespace_states[index]
-			setup_state(state)
-		end
-	end
-end
-
-modules_gui.events = gui_events.events
-modules_gui.events[defines.events.on_player_created] = created_player_handler
-modules_gui.events[defines.events.on_player_removed] = removed_player_handler
-modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
---#endregion
+--#region Internal functions
 
 ---Resolve the instantiable into a GuiElemModuleDef
 ---@param namespace namespace
@@ -259,7 +143,7 @@ end
 ---@param player LuaPlayer
 ---@param namespace string
 ---@return WindowState
-function build(player, namespace)
+local function build(player, namespace)
 	local info = definitions[namespace]
 	if not info then
 		error({"gui-errors.undefined-namespace-build"}, 2)
@@ -282,10 +166,129 @@ function build(player, namespace)
 	}
 	setup_state(self)
 	global[namespace][player.index] = self
-	-- TODO: initialize windowstate values defined in `info`
 
 	return self
 end
+
+--#endregion
+--#region Standard Event Handlers
+
+--- The function called to close the window
+---@param self WindowState
+function standard_handlers.close(self)
+	if self.pinning then
+		self.pinning = nil
+		self.player.opened = self.opened
+		return
+	elseif self.opened then
+		if self.player.opened then
+			standard_handlers.hide(self)
+		else
+			self.player.opened = self.root
+		end
+		return self.opened, defines.events.on_gui_closed
+  end
+	standard_handlers.hide(self)
+end
+---The function called by closing the window
+---@param self WindowState
+function standard_handlers.hide(self)
+	if self.player.opened == self.root then
+		self.player.opened = nil -- Clear it from opened if hidden while still opened
+		return -- Return because it'll call close, which calls hide again
+	end
+	self.root.visible = false
+	if self.shortcut then -- Update registred shortcut
+		self.player.set_shortcut_toggled(self.shortcut, false)
+	end
+end
+---@param self WindowState
+function standard_handlers.show(self)
+	self.root.visible = true
+	if self.shortcut then -- Update registred shortcut
+		self.player.set_shortcut_toggled(self.shortcut, true)
+	end
+	-- Focus something if it should be focused by default
+  if not self.pinned then
+    self.player.opened = self.root
+  end
+end
+---@param self WindowState
+---@return boolean
+function standard_handlers.toggle(self)
+	if self.root.visible then
+		standard_handlers.hide(self)
+	else
+		standard_handlers.show(self)
+	end
+	return self.root.visible
+end
+--#endregion
+--#region Generic Event Handlers
+
+---Handles the creation of new players
+---@param EventData EventData.on_player_created
+function created_player_handler(EventData)
+	local player = game.get_player(EventData.player_index)
+	if not player then return end -- ??
+
+	for name_space in pairs(definitions) do
+		build(player, name_space)
+	end
+end
+---Handles the removal of players
+---@param EventData EventData.on_player_removed
+function removed_player_handler(EventData)
+	for namespace in pairs(definitions) do
+		global[namespace][EventData.player_index] = nil
+	end
+end
+---Opens the element of the player that this event sourced from.
+---Will create a new one if one isn't found
+---@param EventData EventData.CustomInputEvent|EventData.on_lua_shortcut
+function input_or_shortcut_handler(EventData)
+	local namespace
+	if EventData.input_name then
+		namespace = custominput_namespace[EventData.input_name]
+	else
+		namespace = shortcut_namespace[EventData.prototype_name]
+	end
+	if not namespace then return end -- Not one we've been told to handle
+	local player = game.get_player(EventData.player_index)
+	if not player then return end -- ??
+
+	local self = global[namespace][player.index]
+	if not self or not self.root.valid then
+		self = build(player, namespace)
+	end
+
+	standard_handlers.toggle(self)
+end
+---Mentions when this library has changed (potentially breaking)
+---@param ChangedData ConfigurationChangedData
+function modules_gui.on_configuration_changed(ChangedData)
+	local library_changed = ChangedData.mod_changes["gui-modules"]
+	if library_changed and library_changed.old_version ~= nil then
+		game.print("Gui Modules has changed version! This library is still in beta and may have had breaking changes")
+	end
+
+	for _, namespace in pairs(namespaces) do
+		---@type table<integer,WindowState>
+		local namespace_states = global[namespace]
+
+		for index in game.players do
+			local state = namespace_states[index]
+			setup_state(state)
+		end
+	end
+end
+
+modules_gui.events = gui_events.events
+modules_gui.events[defines.events.on_player_created] = created_player_handler
+modules_gui.events[defines.events.on_player_removed] = removed_player_handler
+modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
+--#endregion
+
 
 ---Parses and creates the entity.
 ---

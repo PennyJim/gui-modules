@@ -12,8 +12,11 @@ Date: ????
       * shortcut_name? = The name of a shortcut to open/close this window
       * custominput_name? = The custominput to open/close this window
       * state_setup? = the function to setup the values you need in state
+    - The add function now returns the created element and elems table
   Bugfixes:
     - window_frame can actually take localized strings like intended
+    - The add function now actually adds elements to the elem table
+      * Do keep in mind that elements in that table are not guaranteed  to still be valid
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2024-07-01

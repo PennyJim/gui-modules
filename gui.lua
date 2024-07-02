@@ -301,18 +301,21 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---to register all instances at the start so you only have to build it
 ---@param namespace namespace
 ---@param parent LuaGuiElement
----@param new_children GuiElemModuleDef
+---@param new_child GuiElemModuleDef
 ---@param do_not_copy boolean?
-function modules_gui.add(namespace, parent, new_children, do_not_copy)
+---@return LuaGuiElement
+---@return table<string, LuaGuiElement>
+function modules_gui.add(namespace, parent, new_child, do_not_copy)
 	if not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
 	if not do_not_copy then
-		new_children = table.deepcopy(new_children) --[[@as GuiElemModuleDef]]
+		new_child = table.deepcopy(new_child) --[[@as GuiElemModuleDef]]
 	end
-	local result = {new_children}
+	local result = {new_child}
 	parse_children(namespace, result)
-	flib_gui.add(parent, result[1])
+	local elems,new_elem = flib_gui.add(parent, result[1], global[namespace][parent.player_index].elems)
+	return new_elem,elems
 end
 
 ---Registers a namespace for use

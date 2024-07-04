@@ -278,11 +278,11 @@ function modules_gui.on_configuration_changed(ChangedData)
 		game.print("Gui Modules has changed version! This library is still in beta and may have had breaking changes")
 	end
 
-	for _, namespace in pairs(namespaces) do
+	for namespace in pairs(namespaces) do
 		---@type table<integer,WindowState>
 		local namespace_states = global[namespace]
 
-		for index in game.players do
+		for index in pairs(game.players) do
 			local state = namespace_states[index]
 			setup_state(state)
 		end

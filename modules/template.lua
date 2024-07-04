@@ -5,7 +5,7 @@ local module = {module_type = "my_module", handlers = {} --[[@as GuiModuleEventH
 
 ---WindowState.my_module
 ---@param state table
-module.self_init = function(state)
+module.setup_state = function(state)
 	-- Setup your on fields here
 end
 

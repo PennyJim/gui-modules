@@ -117,8 +117,8 @@ local function open_editor(module, open)
 	end
 end
 
----@param self WindowState.editable_label
-module.handlers[handler_names.edit_button] = function (self, elem)
+---@param state WindowState.editable_label
+module.handlers[handler_names.edit_button] = function (state, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
 	local textfield = module.children[2]
@@ -133,8 +133,8 @@ module.handlers[handler_names.edit_button] = function (self, elem)
 		return textfield, defines.events.on_gui_confirmed
 	end
 end
----@params self WindowState.editable_label
-module.handlers[handler_names.icon_button] = function (self, elem)
+---@params state WindowState.editable_label
+module.handlers[handler_names.icon_button] = function (state, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local textfield = module.children[2]
 	local elem_picker = module.children[3]
@@ -148,8 +148,8 @@ module.handlers[handler_names.icon_button] = function (self, elem)
 	end
 end
 
----@param self WindowState.editable_label
-module.handlers[handler_names.confirm] = function (self, elem)
+---@param state WindowState.editable_label
+module.handlers[handler_names.confirm] = function (state, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local label = module.children[1]
 	local textfield = module.children[2]
@@ -164,13 +164,13 @@ module.handlers[handler_names.confirm] = function (self, elem)
 	open_editor(module, false)
 
 	button.tooltip = {"gui-edit-label.edit-label"}
-	self.opened = nil
+	state.opened = nil
 	return label, defines.events.on_gui_confirmed
 end
----@param self WindowState.editable_label
-module.handlers[handler_names.cancel] = function (self, elem)
-	if self.pinning then
-		self.pinning = nil
+---@param state WindowState.editable_label
+module.handlers[handler_names.cancel] = function (state, elem)
+	if state.pinning then
+		state.pinning = nil
 		return
 	end
 	local module = elem.parent --[[@as LuaGuiElement]]
@@ -188,19 +188,19 @@ module.handlers[handler_names.cancel] = function (self, elem)
 	button.tooltip = {"gui-edit-label.edit-label"}
 	return nil, handler_names.unfocus
 end
----@param self WindowState.editable_label
-module.handlers[handler_names.focus] = function (self, elem)
+---@param state WindowState.editable_label
+module.handlers[handler_names.focus] = function (state, elem)
 	local module = elem.parent --[[@as LuaGuiElement]]
 	local textfield = module.children[2]
 
-	self.opened = textfield
-	if not self.player.opened then
-		self.player.opened = textfield
+	state.opened = textfield
+	if not state.player.opened then
+		state.player.opened = textfield
 	end
 end
----@param self WindowState.editable_label
-module.handlers[handler_names.unfocus] = function (self)
-	self.opened = nil
+---@param state WindowState.editable_label
+module.handlers[handler_names.unfocus] = function (state)
+	state.opened = nil
 end
 
 return module --[[@as GuiModuleDef]]

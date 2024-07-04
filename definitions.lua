@@ -20,7 +20,7 @@
 ---@field custominput string?
 ---@field shortcut string?
 
----@alias GuiModuleEventHandler fun(self:WindowState,elem:LuaGuiElement,event:GuiEventData):LuaGuiElement?,any?
+---@alias GuiModuleEventHandler fun(state:WindowState,elem:LuaGuiElement,event:GuiEventData):LuaGuiElement?,any?
 ---@alias GuiModuleEventHandlers table<any, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlerNames string|table<defines.events,string>
@@ -35,7 +35,7 @@
 
 ---@class GuiModuleDef
 ---@field module_type string the name of the module
----@field setup_state fun(self:WindowState)? The function to setup self values used in this module
+---@field setup_state fun(state:WindowState)? The function to setup state values used in this module
 ---@field build_func fun(parameters:table):GuiElemModuleDef the function to return a GuiElemDef out of the passed definition
 ---@field parameters ModuleParameterDict a table defining the possible parameters of the module
 ---@field handlers GuiModuleEventHandlers the handlers the module uses.

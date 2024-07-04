@@ -88,25 +88,25 @@ function module.build_func(params)
 end
 
 ---Handles the pinning of the window
----@param self WindowState.window_frame
-module.handlers[handler_names.pin] = function (self)
-  self.pinned = not self.pinned
-  if self.pinned then
-    self.elems.window_close_button.tooltip = { "gui.close" }
-    self.elems.pin_button.sprite = "flib_pin_black"
-    self.elems.pin_button.style = "flib_selected_frame_action_button"
-    if self.player.opened == self.root then
-			self.pinning = true
-      self.player.opened = nil
+---@param state WindowState.window_frame
+module.handlers[handler_names.pin] = function (state)
+  state.pinned = not state.pinned
+  if state.pinned then
+    state.elems.window_close_button.tooltip = { "gui.close" }
+    state.elems.pin_button.sprite = "flib_pin_black"
+    state.elems.pin_button.style = "flib_selected_frame_action_button"
+    if state.player.opened == state.root then
+			state.pinning = true
+      state.player.opened = nil
     end
   else
-    self.elems.window_close_button.tooltip = { "gui.close-instruction" }
-    self.elems.pin_button.sprite = "flib_pin_white"
-    self.elems.pin_button.style = "frame_action_button"
-		if self.opened and self.player.opened == self.opened then
-			self.pinning = true
+    state.elems.window_close_button.tooltip = { "gui.close-instruction" }
+    state.elems.pin_button.sprite = "flib_pin_white"
+    state.elems.pin_button.style = "frame_action_button"
+		if state.opened and state.player.opened == state.opened then
+			state.pinning = true
 		end
-    self.player.opened = self.root
+    state.player.opened = state.root
   end
 end
 

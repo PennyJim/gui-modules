@@ -9,16 +9,16 @@ local tag_key = "__"..script.mod_name.."_handler"
 ---@param elem LuaGuiElement
 ---@param e GuiEventData
 local function event_wrapper(namespace, handler, elem, e)
-	local self = global[namespace][e.player_index]
-	if not self then return end
+	local state = global[namespace][e.player_index]
+	if not state then return end
 
-	if not self.root.valid then
+	if not state.root.valid then
 		-- Delete the entry of an invalid gui
 		global[namespace][e.player_index] = nil
 		return
 	end
 
-	local new_elem, new_event = handler(self, elem, e)
+	local new_elem, new_event = handler(state, elem, e)
 	if new_elem or new_event then
 		new_elem = new_elem or elem
 		gui_events.dispatch_specific(new_elem, new_event, e)

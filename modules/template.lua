@@ -4,8 +4,8 @@ local module = {module_type = "my_module", handlers = {} --[[@as GuiModuleEventH
 -- Where custom fields would go
 
 ---WindowState.my_module
----@param self table
-module.self_init = function(self)
+---@param state table
+module.self_init = function(state)
 	-- Setup your on fields here
 end
 
@@ -37,8 +37,8 @@ function module.build_func(params)
 end
 
 -- How to define handlers
----@param self WindowState.my_module
-module.handlers[handler_names.my_handler] = function (self, elem, OriginalEvent)
+---@param state WindowState.my_module
+module.handlers[handler_names.my_handler] = function (state, elem, OriginalEvent)
 	-- Do stuff
 end
 

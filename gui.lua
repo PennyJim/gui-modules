@@ -161,7 +161,7 @@ local function build(player, namespace)
 	)
 
 	---@type WindowState
-	local self = {
+	local state = {
 		root = root,
 		elems = elems,
 		player = player,
@@ -170,64 +170,64 @@ local function build(player, namespace)
 		gui = gui_metatable,
 		namespace = namespace
 	}
-	global[namespace][player.index] = self
-	setup_state(self)
+	global[namespace][player.index] = state
+	setup_state(state)
 
-	return self
+	return state
 end
 
 --#endregion
 --#region Standard Event Handlers
 
 --- The function called to close the window
----@param self WindowState
-function standard_handlers.close(self)
-	if self.pinning then
-		self.pinning = nil
-		self.player.opened = self.opened
+---@param state WindowState
+function standard_handlers.close(state)
+	if state.pinning then
+		state.pinning = nil
+		state.player.opened = state.opened
 		return
-	elseif self.opened then
-		if self.player.opened then
-			standard_handlers.hide(self)
+	elseif state.opened then
+		if state.player.opened then
+			standard_handlers.hide(state)
 		else
-			self.player.opened = self.root
+			state.player.opened = state.root
 		end
-		return self.opened, defines.events.on_gui_closed
+		return state.opened, defines.events.on_gui_closed
   end
-	standard_handlers.hide(self)
+	standard_handlers.hide(state)
 end
 ---The function called by closing the window
----@param self WindowState
-function standard_handlers.hide(self)
-	if self.player.opened == self.root then
-		self.player.opened = nil -- Clear it from opened if hidden while still opened
+---@param state WindowState
+function standard_handlers.hide(state)
+	if state.player.opened == state.root then
+		state.player.opened = nil -- Clear it from opened if hidden while still opened
 		return -- Return because it'll call close, which calls hide again
 	end
-	self.root.visible = false
-	if self.shortcut then -- Update registred shortcut
-		self.player.set_shortcut_toggled(self.shortcut, false)
+	state.root.visible = false
+	if state.shortcut then -- Update registred shortcut
+		state.player.set_shortcut_toggled(state.shortcut, false)
 	end
 end
----@param self WindowState
-function standard_handlers.show(self)
-	self.root.visible = true
-	if self.shortcut then -- Update registred shortcut
-		self.player.set_shortcut_toggled(self.shortcut, true)
+---@param state WindowState
+function standard_handlers.show(state)
+	state.root.visible = true
+	if state.shortcut then -- Update registred shortcut
+		state.player.set_shortcut_toggled(state.shortcut, true)
 	end
 	-- Focus something if it should be focused by default
-  if not self.pinned then
-    self.player.opened = self.root
+  if not state.pinned then
+    state.player.opened = state.root
   end
 end
----@param self WindowState
+---@param state WindowState
 ---@return boolean
-function standard_handlers.toggle(self)
-	if self.root.visible then
-		standard_handlers.hide(self)
+function standard_handlers.toggle(state)
+	if state.root.visible then
+		standard_handlers.hide(state)
 	else
-		standard_handlers.show(self)
+		standard_handlers.show(state)
 	end
-	return self.root.visible
+	return state.root.visible
 end
 --#endregion
 --#region Generic Event Handlers
@@ -263,12 +263,12 @@ local function input_or_shortcut_handler(EventData)
 	local player = game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
-	local self = global[namespace][player.index]
-	if not self or not self.root.valid then
-		self = build(player, namespace)
+	local state = global[namespace][player.index]
+	if not state or not state.root.valid then
+		state = build(player, namespace)
 	end
 
-	standard_handlers.toggle(self)
+	standard_handlers.toggle(state)
 end
 ---Mentions when this library has changed (potentially breaking)
 ---@param ChangedData ConfigurationChangedData
@@ -422,8 +422,8 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	local namespace_states = global[namespace]
 	if namespace_states[0] ~= window_def.version then
 		log(string.format("Migrating %s from version %s to version %s", namespace, namespace_states[0], window_def.version))
-		for i, self in pairs(namespace_states) do
-			self.root.destroy()
+		for i, state in pairs(namespace_states) do
+			state.root.destroy()
 			namespace_states[i] = nil
 		end
 	end

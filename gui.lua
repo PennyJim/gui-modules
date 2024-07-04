@@ -120,9 +120,15 @@ local function parse_children(namespace, children)
 	end
 end
 
+local gui_metatable = {
+	__index = modules_gui
+}
+script.register_metatable("modules_gui_state_metatable", gui_metatable)
+gui_metatable = setmetatable({}, gui_metatable)
+
 ---Sets up the state using all setup functions
 ---Given by modules and associated with namespace
----@param state any
+---@param state WindowState
 local function setup_state(state)
 	-- Modules
 	for _, module in pairs(modules) do
@@ -161,7 +167,7 @@ local function build(player, namespace)
 		player = player,
 		pinned = false,
 		shortcut = info.shortcut,
-		gui = modules_gui,
+		gui = gui_metatable,
 		namespace = namespace
 	}
 	setup_state(self)

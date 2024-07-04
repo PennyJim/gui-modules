@@ -17,6 +17,7 @@ Date: ????
     - window_frame can actually take localized strings like intended
     - The add function now actually adds elements to the elem table
       * Do keep in mind that elements in that table are not guaranteed  to still be valid
+    - Properly preserve the reference to gui in the WindowStates (using a metatable)
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2024-07-01

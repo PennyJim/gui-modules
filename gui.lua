@@ -170,8 +170,8 @@ local function build(player, namespace)
 		gui = gui_metatable,
 		namespace = namespace
 	}
-	setup_state(self)
 	global[namespace][player.index] = self
+	setup_state(self)
 
 	return self
 end

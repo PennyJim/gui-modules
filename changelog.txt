@@ -13,6 +13,7 @@ Date: ????
       * custominput_name? = The custominput to open/close this window
       * state_setup? = the function to setup the values you need in state
     - The add function now returns the created element and elems table
+    - The state is setup *after* putting it in global. This allows functions to actually rely on it being in global.
   Bugfixes:
     - window_frame can actually take localized strings like intended
     - The add function now actually adds elements to the elem table

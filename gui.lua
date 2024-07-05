@@ -198,7 +198,7 @@ local function setup()
 
 		else
 			-- Was previously setup
-			local old_metadata = namespace_states[0] --[[@as WindowMetadata]]
+			local old_metadata = namespace_states[0] or {}--[[@as WindowMetadata]]
 
 			-- destroy and invalidate the elems of all windows
 			if old_metadata.version ~= new_metadata.version then

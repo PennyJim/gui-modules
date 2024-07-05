@@ -191,6 +191,7 @@ local function setup()
 
 		if not namespace_states then
 			-- Wasn't previously setup
+			global[namespace] = {}
 			for _,player in pairs(game.players) do
 				build(player, namespace)
 			end

@@ -6,7 +6,8 @@ local module = {module_type = "my_module", handlers = {} --[[@as GuiModuleEventH
 ---WindowState.my_module
 ---@param state table
 module.setup_state = function(state)
-	-- Setup your on fields here
+	-- Setup your own fields here or restore
+	-- elements after the window was recreated
 end
 
 local handler_names = {

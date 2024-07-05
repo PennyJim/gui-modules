@@ -1,11 +1,21 @@
 local module = {module_type = "window_frame", handlers = {} --[[@as GuiModuleEventHandlers]]}
+local handler_names = {
+	pin = "window_frame.pin",
+}
 
 ---@class WindowState.window_frame : WindowState
 -- Where custom fields would go
 
-local handler_names = {
-	pin = "window_frame.pin",
-}
+---WindowState.my_module
+---@param state table
+module.setup_state = function(state)
+	-- Make visually pinned
+  if state.pinned then
+    state.elems.window_close_button.tooltip = { "gui.close" }
+    state.elems.pin_button.sprite = "flib_pin_black"
+    state.elems.pin_button.style = "flib_selected_frame_action_button"
+  end
+end
 -- FIXME: Make sure it can do everything a frame can
 
 ---@class WindowFrameButtonsDef : ModuleDef

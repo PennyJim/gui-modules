@@ -50,3 +50,10 @@
 ---@field shortcut string? The registered shortcut for the window
 ---@field opened LuaGuiElement? Should be set when subelements are opened. So the main element can close them instead
 ---@field gui ModuleGuiLib A reference to the library table meant to be used in creation of new elements
+
+---@class WindowMetadata
+---@field version any The version of the window definition. Will reconstruct the window if this differs
+
+---@class WindowGlobal
+---@field [0] WindowMetadata
+---@field [integer] WindowState

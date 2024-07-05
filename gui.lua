@@ -38,6 +38,9 @@ local instances = {}
 ---@type table<namespace,fun(state:WindowState)>
 local state_setups = {}
 
+---@type table<namespace,WindowMetadata>?
+local namespace_metadata = {} -- Hold onto it locally until we can compare it to the global and store it there
+
 --#region Internal functions
 
 ---Resolve the instantiable into a GuiElemModuleDef
@@ -148,8 +151,9 @@ end
 ---Builds the gui in the namespace for the given player
 ---@param player LuaPlayer
 ---@param namespace string
+---@param state WindowState?
 ---@return WindowState
-local function build(player, namespace)
+local function build(player, namespace, state)
 	local info = definitions[namespace]
 	if not info then
 		error({"gui-errors.undefined-namespace-build"}, 2)
@@ -161,19 +165,68 @@ local function build(player, namespace)
 	)
 
 	---@type WindowState
-	local state = {
-		root = root,
-		elems = elems,
-		player = player,
-		pinned = false,
-		shortcut = info.shortcut,
-		gui = gui_metatable,
-		namespace = namespace
-	}
+	state = state or {}
+	state.root = root
+	state.elems = elems
+	state.player = player
+	state.pinned = not not state.pinned
+	state.shortcut = info.shortcut -- FIXME: Doesn't get shortcuts registered outside window_def
+	state.gui = gui_metatable
+	state.namespace = namespace
+
 	global[namespace][player.index] = state
 	setup_state(state)
 
 	return state
+end
+
+---Setsup all necessary values
+local function setup()
+	for namespace in pairs(namespaces) do
+---@diagnostic disable-next-line: need-check-nil
+		local new_metadata = namespace_metadata[namespace]
+
+		---@type WindowGlobal?
+		local namespace_states = global[namespace]
+
+		if not namespace_states then
+			-- Wasn't previously setup
+			for _,player in pairs(game.players) do
+				build(player, namespace)
+			end
+
+		else
+			-- Was previously setup
+			local old_metadata = namespace_states[0] --[[@as WindowMetadata]]
+
+			-- destroy and invalidate the elems of all windows
+			if old_metadata.version ~= new_metadata.version then
+				log(string.format("Migrating %s from version %s to version %s", namespace, old_metadata.version, new_metadata.version))
+				for i, state in pairs(namespace_states) do
+					if i ~= 0 then
+						---@cast state WindowState
+						if state.player.valid then
+							state.root.destroy()
+							state.elems = nil
+							build(state.player, namespace)
+						else
+							namespace_states[i] = nil
+						end
+					end
+				end
+				namespace_states[0] = new_metadata
+			else
+
+				-- Same version. Just let modules setup state
+				for index in pairs(game.players) do
+					local state = namespace_states[index] --[[@as WindowState]]
+					setup_state(state)
+				end
+			end
+		end
+	end
+
+	namespace_metadata = nil
 end
 
 --#endregion
@@ -238,14 +291,14 @@ local function created_player_handler(EventData)
 	local player = game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
-	for name_space in pairs(definitions) do
-		build(player, name_space)
+	for namespace in pairs(namespaces) do
+		build(player, namespace)
 	end
 end
 ---Handles the removal of players
 ---@param EventData EventData.on_player_removed
 local function removed_player_handler(EventData)
-	for namespace in pairs(definitions) do
+	for namespace in pairs(namespaces) do
 		global[namespace][EventData.player_index] = nil
 	end
 end
@@ -270,6 +323,10 @@ local function input_or_shortcut_handler(EventData)
 
 	standard_handlers.toggle(state)
 end
+
+function modules_gui.on_init()
+	setup()
+end
 ---Mentions when this library has changed (potentially breaking)
 ---@param ChangedData ConfigurationChangedData
 function modules_gui.on_configuration_changed(ChangedData)
@@ -278,15 +335,7 @@ function modules_gui.on_configuration_changed(ChangedData)
 		game.print("Gui Modules has changed version! This library is still in beta and may have had breaking changes")
 	end
 
-	for namespace in pairs(namespaces) do
-		---@type table<integer,WindowState>
-		local namespace_states = global[namespace]
-
-		for index in pairs(game.players) do
-			local state = namespace_states[index]
-			setup_state(state)
-		end
-	end
+	setup()
 end
 
 modules_gui.events = gui_events.events
@@ -333,7 +382,9 @@ function modules_gui.new_namespace(namespace)
 	if definitions[namespace] then
 		error{"gui-errors.namespace-already-registered", namespace}
 	end
-	global[namespace] = global[namespace] or {}
+	-- This is run before global is available...
+	-- global tables are setup in init instead
+	-- global[namespace] = global[namespace] or {}
 	instances[namespace] = {}
 	namespaces[namespace] = true
 end
@@ -417,17 +468,10 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	end
 	definitions[namespace] = window_def
 
-	-- Handle version change
-	---@type WindowState[]
-	local namespace_states = global[namespace]
-	if namespace_states[0] ~= window_def.version then
-		log(string.format("Migrating %s from version %s to version %s", namespace, namespace_states[0], window_def.version))
-		for i, state in pairs(namespace_states) do
-			state.root.destroy()
-			namespace_states[i] = nil
-		end
-	end
-	namespace_states[0] = window_def.version
+	-- Save metadata until it can be put into global
+	namespace_metadata[namespace] = {
+		version = window_def.version
+	}
 
 	handlers = handlers or {}
 	for name, func in pairs(standard_handlers) do

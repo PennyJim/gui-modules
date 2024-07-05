@@ -20,6 +20,7 @@ Date: ????
       * Do keep in mind that elements in that table are not guaranteed  to still be valid
     - Properly preserve the reference to gui in the WindowStates (using a metatable)
     - The on_configuration_changed handler actually functions now
+    - Actually setup global in init/config_changed rather than improperly in the main chunk :facepalm:
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2024-07-01

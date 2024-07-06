@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
-Date: ????
+Date: 2024-07-06
   Changes:
     - namespace and a reference to the library are now found in the state
     - Modules can now setup their values in the window state with setup_state

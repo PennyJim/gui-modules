@@ -1,3 +1,6 @@
+---@param value ModuleParameterDef
+---@param acceptable_type type[]
+---@param module_type string
 local function type_validation(key, value, acceptable_type, module_type)
 	local is_valid_type = false
 	for _, valid_type in pairs(acceptable_type) do
@@ -12,6 +15,9 @@ local function type_validation(key, value, acceptable_type, module_type)
 	end
 end
 
+---@param value ModuleParameterDef
+---@param acceptable_values any[]
+---@param module_type string
 local function enum_validation(key, value, acceptable_values, module_type)
 	if type(value) ~= "string" then return end
 	if not acceptable_values then return end
@@ -31,7 +37,7 @@ end
 
 ---Validates the parameters of the module
 ---@param module GuiModuleDef
----@param params table
+---@param params ModuleParameterDict
 local function validate_module_params(module, params)
 	local parameter_description = module.parameters
 	local module_type = module.module_type

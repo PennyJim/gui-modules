@@ -2,6 +2,8 @@
 
 ---@alias namespace string
 
+---@class Global : {[string]:WindowGlobal}
+
 ---@class GuiElemModuleDef : GuiElemDef
 ---@field type GuiElementType|"module"|"instantiable"
 ---@field children GuiElemModuleDef|GuiElemModuleDef[]?
@@ -23,7 +25,7 @@
 ---@alias GuiModuleEventHandler fun(state:WindowState,elem:LuaGuiElement,event:GuiEventData):LuaGuiElement?,any?
 ---@alias GuiModuleEventHandlers table<any, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
----@alias GuiModuleEventHandlerNames string|table<defines.events,string>
+---@alias GuiModuleEventHandlerNames string|table<string,string>
 
 ---@class ModuleDef : GuiElemModuleDef
 ---@class ModuleParameterDef
@@ -54,6 +56,5 @@
 ---@class WindowMetadata
 ---@field version any The version of the window definition. Will reconstruct the window if this differs
 
----@class WindowGlobal
+---@class WindowGlobal : {[integer]: WindowState}
 ---@field [0] WindowMetadata
----@field [integer] WindowState

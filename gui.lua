@@ -10,6 +10,7 @@ local flib_gui = require("__flib__.gui-lite")
 local gui_events = require("__gui-modules__.gui_events")
 local validate_module_params = require("__gui-modules__.module_validation")
 require("util")
+---@type table<string, fun(state:WindowState):LuaGuiElement?,any?>
 local standard_handlers = {}
 
 ---@type {[string]:GuiModuleDef}
@@ -50,7 +51,7 @@ local namespace_metadata = {} -- Hold onto it locally until we can compare it to
 ---@param index integer
 ---@return GuiElemModuleDef
 local function resolve_instantiable(namespace, child, arr, index)
-	local instance = instances[namespace][child.instantiable_name]
+	local instance = instances[namespace][child.instantiable_name --[[@as string]]]
 	if not instance then
 		error{"gui-errors.invalid-instantiable", namespace, child}
 	end
@@ -307,6 +308,7 @@ end
 ---Will create a new one if one isn't found
 ---@param EventData EventData.CustomInputEvent|EventData.on_lua_shortcut
 local function input_or_shortcut_handler(EventData)
+	---@type namespace
 	local namespace
 	if EventData.input_name then
 		namespace = custominput_namespace[EventData.input_name]
@@ -318,6 +320,7 @@ local function input_or_shortcut_handler(EventData)
 	if not player then return end -- ??
 
 	local state = global[namespace][player.index]
+	---@cast state WindowState
 	if not state or not state.root.valid then
 		state = build(player, namespace)
 	end

@@ -1,3 +1,4 @@
+---@type table<string,true>
 local modules = {}
 local validate_module = {}
 ---@type table<type,true>
@@ -88,6 +89,7 @@ function validate_module.param(name, key, definition)
 	if type(definition.type) ~= "table" then
 		error("The '%s' module's '%s' parameter need to define its type with an array", name, key)
 	end
+	---@type boolean, table<type,true>
 	local can_enum,valid_type_lookup = false,{}
 	for index, type_string in pairs(valid_type_table) do
 		if not type_lookup[type_string] then

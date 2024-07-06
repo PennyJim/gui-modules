@@ -1,3 +1,9 @@
+---@class FrameActionButtonDef
+---@field name string
+---@field sprite string
+---@field tooltip LocalisedString
+---@field handler string
+
 ---@type GuiModuleDef
 return {
 	module_type = "frame_action_button",
@@ -7,6 +13,8 @@ return {
 		tooltip = {is_optional = true, type = {"table","string"}},
 		handler = {is_optional = true, type = {"string"}}, -- The name of the handler
 	},
+	---@param params FrameActionButtonDef
+	---@return GuiElemModuleDef
 	build_func = function(params)
 		return {
 			type = "sprite-button",

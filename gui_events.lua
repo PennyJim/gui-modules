@@ -10,6 +10,7 @@ local tag_key = "__"..script.mod_name.."_handler"
 ---@param e GuiEventData
 local function event_wrapper(namespace, handler, elem, e)
 	local state = global[namespace][e.player_index]
+	---@cast state WindowState
 	if not state then return end
 
 	if not state.root.valid then
@@ -68,6 +69,7 @@ end
 --- @param override_old boolean?
 function gui_events.register(new_handlers, namespace, override_old)
   for name, handler in pairs(new_handlers) do
+		---@cast name string
 		name = namespace.."/"..name
 
     if type(handler) == "function" then
@@ -90,6 +92,7 @@ function gui_events.convert_handler_names(namespace, child)
 	if not handler then return end -- Skip ones without handlers
 	local handler_type = type(handler)
 
+	---@type GuiModuleEventHandlerNames
 	local handler_name
 	if handler_type == "table" then
 		handler_name = {}

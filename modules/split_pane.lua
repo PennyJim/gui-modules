@@ -32,6 +32,7 @@ module.parameters = {
 function module.build_func(params)
 	local panes = params.number_of_panes
 	local styles = params.frame_styles or "inside_shallow_frame_with_padding"
+	---@type string
 	local style
 	local pane_contents = params.panes
 	if type(styles) == "string" then
@@ -42,6 +43,7 @@ function module.build_func(params)
 		error{"module-errors.array-too-short", "children", panes, #pane_contents}
 	end
 
+	---@type GuiElemModuleDef[]
 	local children = {}
 	---@type LuaStyle?
 	local child_style_mod
@@ -58,7 +60,7 @@ function module.build_func(params)
 	end
 	return {
 		type = "flow", direction = params.direction,
-		style = "inset_frame_container_"..params.direction.."_flow",
+		style = "inset_frame_container_"..params.direction.."_flow" --[[@as string]],
 		children = children
 	}
 end

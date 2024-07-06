@@ -365,7 +365,7 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---to register all instances at the start so you only have to build it
 ---@param namespace namespace
 ---@param parent LuaGuiElement
----@param new_child GuiElemModuleDef
+---@param new_child GuiElemModuleDef|GuiElemModuleDef[]
 ---@param do_not_copy boolean?
 ---@return LuaGuiElement
 ---@return table<string, LuaGuiElement>
@@ -376,9 +376,11 @@ function modules_gui.add(namespace, parent, new_child, do_not_copy)
 	if not do_not_copy then
 		new_child = table.deepcopy(new_child) --[[@as GuiElemModuleDef]]
 	end
-	local result = {new_child}
-	parse_children(namespace, result)
-	local elems,new_elem = flib_gui.add(parent, result[1], global[namespace][parent.player_index].elems)
+	if new_child.type then
+		new_child = {new_child}
+	end
+	parse_children(namespace, new_child)
+	local elems,new_elem = flib_gui.add(parent, new_child, global[namespace][parent.player_index].elems)
 	return new_elem,elems
 end
 

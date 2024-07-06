@@ -175,7 +175,8 @@ local function build(player, namespace, state)
 	state.gui = gui_metatable
 	state.namespace = namespace
 
-	global[namespace][player.index] = state
+
+	global[namespace]--[[@as WindowGlobal]][player.index] = state
 	setup_state(state)
 
 	return state
@@ -192,7 +193,7 @@ local function setup()
 
 		if not namespace_states then
 			-- Wasn't previously setup
-			global[namespace] = {}
+			global--[[@as Global.gui]][namespace] = {}
 			for _,player in pairs(game.players) do
 				build(player, namespace)
 			end
@@ -301,7 +302,7 @@ end
 ---@param EventData EventData.on_player_removed
 local function removed_player_handler(EventData)
 	for namespace in pairs(namespaces) do
-		global[namespace][EventData.player_index] = nil
+		global[namespace]--[[@as WindowGlobal]][EventData.player_index] = nil
 	end
 end
 ---Opens the element of the player that this event sourced from.
@@ -319,7 +320,7 @@ local function input_or_shortcut_handler(EventData)
 	local player = game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
-	local state = global[namespace][player.index]
+	local state = global[namespace]--[[@as WindowGlobal]][player.index]
 	---@cast state WindowState
 	if not state or not state.root.valid then
 		state = build(player, namespace)

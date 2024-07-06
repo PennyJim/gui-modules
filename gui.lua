@@ -184,8 +184,12 @@ end
 
 ---Setsup all necessary values
 local function setup()
+	if not namespace_metadata then
+		log("Setup called after namespace_metadata has been cleared.")
+		return
+	end
+
 	for namespace in pairs(namespaces) do
----@diagnostic disable-next-line: need-check-nil
 		local new_metadata = namespace_metadata[namespace]
 
 		---@type WindowGlobal?

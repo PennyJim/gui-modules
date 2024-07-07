@@ -13,6 +13,7 @@ require("util")
 ---@type table<string, fun(state:WindowState):LuaGuiElement?,any?>
 local standard_handlers = {}
 
+--MARK: Modules
 ---@type {[string]:GuiModuleDef}
 local modules = {}
 do -- Grab the modules from startup settings
@@ -51,6 +52,7 @@ local namespace_metadata = {} -- Hold onto it locally until we can compare it to
 ---@param index integer
 ---@return GuiElemModuleDef
 local function resolve_instantiable(namespace, child, arr, index)
+	---MARK: instance/structs
 	local instance = instances[namespace][child.instantiable_name --[[@as string]]]
 	if not instance then
 		error{"gui-errors.invalid-instantiable", namespace, child}
@@ -65,6 +67,7 @@ end
 ---@param index integer
 ---@return GuiElemModuleDef
 local function expand_module(namespace, child, arr, index)
+	---MARK: build module
 	local mod_type = child.module_type
 	if not mod_type then 
 		error{"gui-errors.no-module-name"}
@@ -83,6 +86,7 @@ end
 ---@param namespace namespace
 ---@param children GuiElemModuleDef[]
 local function parse_children(namespace, children)
+	---MARK: preprocess
 	for i = 1, #children do
 		-- Cache the child and type
 		local child = children[i]
@@ -134,6 +138,7 @@ gui_metatable = setmetatable({}, gui_metatable)
 ---Given by modules and associated with namespace
 ---@param state WindowState
 local function setup_state(state)
+	---MARK: Setup states
 	-- Modules
 	for _, module in pairs(modules) do
 		local init = module.setup_state
@@ -155,6 +160,7 @@ end
 ---@param state WindowState?
 ---@return WindowState
 local function build(player, namespace, state)
+	---MARK: Build
 	local info = definitions[namespace]
 	if not info then
 		error({"gui-errors.undefined-namespace-build"}, 2)
@@ -184,6 +190,7 @@ end
 
 ---Setsup all necessary values
 local function setup()
+	---MARK: Setup
 	if not namespace_metadata then
 		log("Setup called after namespace_metadata has been cleared.")
 		return
@@ -246,6 +253,7 @@ end
 --- The function called to close the window
 ---@param state WindowState
 function standard_handlers.close(state)
+	---MARK: Close
 	if state.pinning then
 		state.pinning = nil
 		state.player.opened = state.opened
@@ -263,6 +271,7 @@ end
 ---The function called by closing the window
 ---@param state WindowState
 function standard_handlers.hide(state)
+	---MARK: Hide
 	if state.player.opened == state.root then
 		state.player.opened = nil -- Clear it from opened if hidden while still opened
 		return -- Return because it'll call close, which calls hide again
@@ -274,6 +283,7 @@ function standard_handlers.hide(state)
 end
 ---@param state WindowState
 function standard_handlers.show(state)
+	---MARK: Show
 	state.root.visible = true
 	if state.shortcut then -- Update registred shortcut
 		state.player.set_shortcut_toggled(state.shortcut, true)
@@ -286,6 +296,7 @@ end
 ---@param state WindowState
 ---@return boolean
 function standard_handlers.toggle(state)
+	---MARK: Toggle
 	if state.root.visible then
 		standard_handlers.hide(state)
 	else
@@ -299,6 +310,7 @@ end
 ---Handles the creation of new players
 ---@param EventData EventData.on_player_created
 local function created_player_handler(EventData)
+	---MARK: player created
 	local player = game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
@@ -309,6 +321,7 @@ end
 ---Handles the removal of players
 ---@param EventData EventData.on_player_removed
 local function removed_player_handler(EventData)
+	---MARK: player deleted
 	for namespace in pairs(namespaces) do
 		global[namespace]--[[@as WindowGlobal]][EventData.player_index] = nil
 	end
@@ -317,6 +330,7 @@ end
 ---Will create a new one if one isn't found
 ---@param EventData EventData.CustomInputEvent|EventData.on_lua_shortcut
 local function input_or_shortcut_handler(EventData)
+	---MARK: input/shortcut
 	---@type namespace
 	local namespace
 	if EventData.input_name then
@@ -337,12 +351,14 @@ local function input_or_shortcut_handler(EventData)
 	standard_handlers.toggle(state)
 end
 
+---MARK: init
 function modules_gui.on_init()
 	setup()
 end
 ---Mentions when this library has changed (potentially breaking)
 ---@param ChangedData ConfigurationChangedData
 function modules_gui.on_configuration_changed(ChangedData)
+	---MARK: Config changed
 	local library_changed = ChangedData.mod_changes["gui-modules"]
 	if library_changed and library_changed.old_version ~= nil then
 		game.print("Gui Modules has changed version! This library is still in beta and may have had breaking changes")
@@ -374,6 +390,7 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---@return LuaGuiElement
 ---@return table<string, LuaGuiElement>
 function modules_gui.add(namespace, parent, new_child, do_not_copy)
+	---MARK: add
 	if not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
@@ -391,6 +408,7 @@ end
 ---Registers a namespace for use
 ---@param namespace namespace
 function modules_gui.new_namespace(namespace)
+	---MARK: new namespace
 	if namespace:match("/") then
 		error{"gui-errors.invalid-namespace", namespace, namespace:match("/")}
 	end
@@ -408,6 +426,7 @@ end
 ---@param shortcut string
 ---@param skip_check boolean? For internal use
 function modules_gui.register_shortcut(namespace, shortcut, skip_check)
+	---MARK: register shortcut
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
@@ -418,6 +437,7 @@ end
 ---@param custominput string
 ---@param skip_check boolean? For internal use
 function modules_gui.register_custominput(namespace, custominput, skip_check)
+	---MARK: register custominput
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace-build"}
 	end
@@ -431,6 +451,7 @@ end
 ---@param do_not_copy boolean?
 ---@param skip_check boolean? For internal use
 function modules_gui.register_instances(namespace, new_instances, do_not_copy, skip_check)
+	---MARK: register instance/struct
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
@@ -452,6 +473,7 @@ end
 ---@param state_setup fun(state:WindowState)
 ---@param skip_check boolean? for internal use
 function modules_gui.register_state_setup(namespace, state_setup, skip_check)
+	---MARK: register setup func
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
@@ -464,6 +486,7 @@ end
 ---@param handlers GuiModuleEventHandlers?
 ---@param instances table<string,GuiElemModuleDef>?
 function modules_gui.define_window(namespace, window_def, handlers, instances)
+	---MARK: window_def
 	-- Either create new namespace, or update missing values
 	if not namespaces[namespace] then
 		modules_gui.new_namespace(namespace)
@@ -520,6 +543,7 @@ end
 ---Creates a new namespace with the window definition
 ---@param params newWindowParams
 function modules_gui.new(params)
+	---MARK: new()
 	local namespace = params.window_def.namespace
 	modules_gui.new_namespace(namespace)
 	if params.shortcut_name then

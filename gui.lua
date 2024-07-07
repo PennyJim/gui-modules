@@ -405,6 +405,33 @@ function modules_gui.add(namespace, parent, new_child, do_not_copy)
 	return new_elem,elems
 end
 
+---Returns the WindowState of the given player and namespace.
+---Always gurenteed to have the root element valid as it'll
+---just rebuild the UI if it's not
+---@param namespace namespace
+---@param player_index integer
+---@return WindowState
+---@nodiscard
+function modules_gui.get_state(namespace, player_index)
+	---MARK: get state
+	if not namespaces[namespace] then
+		error{"gui-errors.undefined-namespace"}
+	end
+
+	---@type WindowState?
+	local state = global[namespace][player_index]
+
+	if not state or not state.root or not state.root.valid then
+		local player = game.get_player(player_index)
+		if not player then
+			error{"gui-errors.invalid-player"}
+		end
+		state = build(player, namespace, state)
+	end
+
+	return state
+end
+
 ---Registers a namespace for use
 ---@param namespace namespace
 function modules_gui.new_namespace(namespace)

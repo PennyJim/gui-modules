@@ -2,6 +2,7 @@
 Version: 0.0.5
 Date: ????
   Changes:
+    - Added get_state() to safely obtain the WindowState
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.4
 Date: 2024-07-07

@@ -225,9 +225,13 @@ local function setup()
 			else
 
 				-- Same version. Just let modules setup state
-				for index in pairs(game.players) do
+				for index, player in pairs(game.players) do
 					local state = namespace_states[index] --[[@as WindowState]]
-					setup_state(state)
+					if state.root.valid then
+						setup_state(state)
+					else
+						build(player, namespace)
+					end
 				end
 			end
 		end

@@ -3,6 +3,8 @@ Version: 0.0.4
 Date: ????
   Changes:
     - Changed add() to support multiple elements at once
+  Bugfixes:
+    - Rebuild the UI if the root element is invalid rather than trying to migrate it
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.3
 Date: 2024-07-06

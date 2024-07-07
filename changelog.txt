@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.4
-Date: ????
+Date: 2024-07-07
   Changes:
     - Changed add() to support multiple elements at once
   Bugfixes:

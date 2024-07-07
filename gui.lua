@@ -222,7 +222,7 @@ local function setup()
 						if state.player.valid then
 							state.root.destroy()
 							state.elems = nil
-							build(state.player, namespace)
+							build(state.player, namespace, state)
 						else
 							namespace_states[i] = nil
 						end
@@ -237,7 +237,7 @@ local function setup()
 					if state.root.valid then
 						setup_state(state)
 					else
-						build(player, namespace)
+						build(player, namespace, state)
 					end
 				end
 			end
@@ -345,7 +345,7 @@ local function input_or_shortcut_handler(EventData)
 	local state = global[namespace]--[[@as WindowGlobal]][player.index]
 	---@cast state WindowState
 	if not state or not state.root.valid then
-		state = build(player, namespace)
+		state = build(player, namespace, state)
 	end
 
 	standard_handlers.toggle(state)

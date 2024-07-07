@@ -37,7 +37,7 @@ end
 function gui_events.dispatch_specific(elem, event, e)
   local handler_name = elem.tags[tag_key] --[[@as GuiModuleEventHandlerNames?]]
 	if type(handler_name) == "table" then
-		handler_name = handler_name[tostring(event or e.name)]
+		handler_name = handler_name[tostring(event or e.name)]--[[@as string]]
 	end
   if not handler_name then
     return false
@@ -55,7 +55,7 @@ function gui_events.dispatch_event(e)
 
   local handler_name = elem.tags[tag_key] --[[@as GuiModuleEventHandlerNames?]]
 	if type(handler_name) == "table" then
-		handler_name = handler_name[tostring(e.name)]
+		handler_name = handler_name[tostring(e.name)]--[[@as string]]
 	end
   if not handler_name then
     return false

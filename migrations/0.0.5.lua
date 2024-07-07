@@ -1,0 +1,1 @@
+global.gui_states = global.gui_states or {}

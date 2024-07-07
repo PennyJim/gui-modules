@@ -2,7 +2,8 @@
 
 ---@alias namespace string
 
----@class Global.gui : {[string]:WindowGlobal}
+---@class Global
+---@field gui_states {[string]:WindowGlobal}
 
 ---@class GuiElemModuleDef : GuiElemDef
 ---@field type GuiElementType|"module"|"instantiable"

@@ -2,6 +2,8 @@ local gui_events = {}
 ---@type GuiModuleEventHandlersMap
 local handlers = {}
 local tag_key = "__"..script.mod_name.."_handler"
+---@type WindowGlobal[]
+local states
 
 ---Creates the wrapper for the namespace
 ---@param namespace string
@@ -9,13 +11,16 @@ local tag_key = "__"..script.mod_name.."_handler"
 ---@param elem LuaGuiElement
 ---@param e GuiEventData
 local function event_wrapper(namespace, handler, elem, e)
-	local state = global[namespace]--[[@as WindowGlobal]][e.player_index]
+	if not states then
+		states = global.gui_states
+	end
+	local state = states[namespace]--[[@as WindowGlobal]][e.player_index]
 	---@cast state WindowState
 	if not state then return end
 
 	if not state.root.valid then
 		-- Delete the entry of an invalid gui
-		global[namespace]--[[@as WindowGlobal]][e.player_index] = nil
+		states[namespace][e.player_index] = nil
 		return
 	end
 

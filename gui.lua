@@ -4,6 +4,8 @@ if ... ~= "__gui-modules__.gui" then
 end
 ---@class ModuleGuiLib : event_handler
 modules_gui = {}
+---@type {[namespace]:WindowGlobal}
+local states
 
 ---@type flib_gui
 local flib_gui = require("__flib__.gui-lite")
@@ -182,7 +184,7 @@ local function build(player, namespace, state)
 	state.namespace = namespace
 
 
-	global[namespace]--[[@as WindowGlobal]][player.index] = state
+	states[namespace][player.index] = state
 	setup_state(state)
 
 	return state
@@ -200,11 +202,11 @@ local function setup()
 		local new_metadata = namespace_metadata[namespace]
 
 		---@type WindowGlobal?
-		local namespace_states = global[namespace]
+		local namespace_states = states[namespace]
 
 		if not namespace_states then
 			-- Wasn't previously setup
-			global--[[@as Global.gui]][namespace] = {}
+			states[namespace] = {}
 			for _,player in pairs(game.players) do
 				build(player, namespace)
 			end
@@ -323,7 +325,7 @@ end
 local function removed_player_handler(EventData)
 	---MARK: player deleted
 	for namespace in pairs(namespaces) do
-		global[namespace]--[[@as WindowGlobal]][EventData.player_index] = nil
+		states[namespace][EventData.player_index] = nil
 	end
 end
 ---Opens the element of the player that this event sourced from.
@@ -342,7 +344,7 @@ local function input_or_shortcut_handler(EventData)
 	local player = game.get_player(EventData.player_index)
 	if not player then return end -- ??
 
-	local state = global[namespace]--[[@as WindowGlobal]][player.index]
+	local state = states[namespace][player.index]
 	---@cast state WindowState
 	if not state or not state.root.valid then
 		state = build(player, namespace, state)
@@ -353,7 +355,12 @@ end
 
 ---MARK: init
 function modules_gui.on_init()
+	states = {}
+	global.gui_states = states
 	setup()
+end
+function modules_gui.on_load()
+	states = global.gui_states
 end
 ---Mentions when this library has changed (potentially breaking)
 ---@param ChangedData ConfigurationChangedData
@@ -401,7 +408,7 @@ function modules_gui.add(namespace, parent, new_child, do_not_copy)
 		new_child = {new_child}
 	end
 	parse_children(namespace, new_child)
-	local elems,new_elem = flib_gui.add(parent, new_child, global[namespace][parent.player_index].elems)
+	local elems,new_elem = flib_gui.add(parent, new_child, states[namespace][parent.player_index].elems)
 	return new_elem,elems
 end
 
@@ -418,8 +425,9 @@ function modules_gui.get_state(namespace, player_index)
 		error{"gui-errors.undefined-namespace"}
 	end
 
-	---@type WindowState?
-	local state = global[namespace][player_index]
+	---@type WindowMetadata|WindowState?
+	local state = states[namespace][player_index]
+	---@cast state WindowState?
 
 	if not state or not state.root or not state.root.valid then
 		local player = game.get_player(player_index)

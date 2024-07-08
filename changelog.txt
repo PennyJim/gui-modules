@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.5
-Date: ????
+Date: 2024-07-08
   Changes:
     - Added get_state() to safely obtain the WindowState
     - Moved the expected location of namespace states into its own field in global

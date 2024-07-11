@@ -2,6 +2,9 @@
 if ... ~= "__gui-modules__.gui" then
 	return require("__gui-modules__.gui")
 end
+---@class ModulesGlobal
+---@field gui_states {[namespace]:WindowGlobal}
+global = {}
 ---@class ModuleGuiLib : event_handler
 modules_gui = {}
 ---@type {[namespace]:WindowGlobal}

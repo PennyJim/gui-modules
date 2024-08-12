@@ -2,6 +2,7 @@
 if ... ~= "__gui-modules__.gui" then
 	return require("__gui-modules__.gui")
 end
+require("__gui-modules__.definitions")
 ---@class ModulesGlobal
 ---@field gui_states {[namespace]:WindowGlobal}
 global = {}

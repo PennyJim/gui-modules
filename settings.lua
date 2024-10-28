@@ -16,7 +16,6 @@ local function main_module_add(name)
 end
 
 data:extend{
-	main_module_add("frame_action_button"),
 	main_module_add("window_frame"),
 	main_module_add("split_pane"),
 	main_module_add("editable_label"),

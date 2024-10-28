@@ -70,20 +70,22 @@ function module.build_func(params)
 								ignored_by_interaction = true,
 							},
 							-- params.has_config_button and { -- Config button
-							-- 	type = "module", module_type = "frame_action_button",
+							-- 	type = "sprite-button", style = "frame_action_button",
 							-- 	name = "config_button", tooltip = {"gui.flib-settings"},
-							-- 	sprite = "flib_settings", handler = params.config_handler
+							-- 	sprite = "flib_settings_white", hovered_sprite = "flib_settings_black",
+							-- 	handler = params.config_handler,
 							-- } or {},
 							params.has_pin_button and { -- Pin button
-								type = "module", module_type = "frame_action_button",
+								type = "sprite-button", style = "frame_action_button",
 								name = "pin_button", tooltip = {"gui.flib-keep-open"},
-								sprite = "flib_pin", handler = handler_names.pin,
-								append = true,
+								sprite = "flib_pin_white", hovered_sprite = "flib_pin_black",
+								handler = handler_names.pin,
 							} or {},
 							params.has_close_button and { -- Close button
-								type = "module", module_type = "frame_action_button",
+								type = "sprite-button", style = "frame_action_button",
 								name = "window_close_button", tooltip = {"gui.close-instruction"},
-								sprite = "utility/close", handler = "hide"
+								sprite = "utility/close",
+								handler = "hide",
 							} or {},
 						}
 					},

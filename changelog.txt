@@ -2,6 +2,8 @@
 Version: 0.0.6
 Date: ????
   Changes:
+    - All (or at least most) of types are now scoped under `module`
+    - Removed the frame action button module as it's one small function is no longer useful
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.5
 Date: 2024-07-08

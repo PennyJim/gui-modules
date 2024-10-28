@@ -1,1 +1,1 @@
-global.gui_states = global.gui_states or {}
+storage.gui_states = storage.gui_states or {}

@@ -11,7 +11,7 @@ local type_lookup = {
 	-- ["function"] = true, -- Handlers should be registered and passed a strings
 	-- I could be convinced to allow passing functions, but you have to have a *good* reason
 	-- ["thread"] = true, -- Should not be possible
-	-- ["userdata"] = true, -- Don't all LuaObjects have table wrappers?
+	-- ["userdata"] = true, -- Don't all LuaObjects have table wrappers? Not anymore, but I'll probably want a different method to determine their type than "userdata"
 }
 ---@type table<type,true>
 local enum_type_lookup = {
@@ -27,7 +27,7 @@ local function error(...) real_error(string.format(...)) end
 ---Validates the modules and throws errors on invalid modules
 ---*now* rather than letting an someone try and use it
 ---@param name string
----@param definition GuiModuleDef
+---@param definition modules.GuiModuleDef
 function validate_module.module(name, definition)
 	if modules[definition.module_type] then
 		error("the '%s' module already exists", name)
@@ -72,7 +72,7 @@ end
 ---Validates the parameters
 ---@param name string
 ---@param key string
----@param definition ModuleParameterDef
+---@param definition modules.ModuleParameterDef
 function validate_module.param(name, key, definition)
 	if type(key) ~= "string" then
 		error("The '%s' module's parameter keys should all be strings, not '%s'", name, serpent.block(key))
@@ -136,7 +136,7 @@ local prefix = "gui_module_add_"
 for name, setting in pairs(settings.startup) do
 	if name:find(prefix) then
 		local setting_name = name:sub(prefix:len()+1)
-		---@type GuiModuleDef
+		---@type modules.GuiModuleDef
 		local module = require(setting.value --[[@as string]])
 		local module_name = module.module_type
 		if type(module_name) ~= "string" then

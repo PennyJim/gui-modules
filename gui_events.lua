@@ -9,13 +9,13 @@ local states
 ---@param namespace string
 ---@param handler GuiModuleEventHandler
 ---@param elem LuaGuiElement
----@param e GuiEventData
+---@param e flib.GuiEventData
 local function event_wrapper(namespace, handler, elem, e)
 	if not states then
-		states = global.gui_states
+		states = storage.gui_states
 	end
 	local state = states[namespace]--[[@as WindowGlobal]][e.player_index]
-	---@cast state WindowState
+	---@cast state modules.WindowState
 	if not state then return end
 
 	if not state.root.valid then
@@ -33,7 +33,7 @@ end
 ---Dispatches an event to a specific element
 ---@param elem LuaGuiElement
 ---@param event defines.events?
----@param e GuiEventData
+---@param e flib.GuiEventData
 function gui_events.dispatch_specific(elem, event, e)
   local handler_name = elem.tags[tag_key] --[[@as GuiModuleEventHandlerNames?]]
 	if type(handler_name) == "table" then
@@ -48,7 +48,7 @@ function gui_events.dispatch_specific(elem, event, e)
 	event_wrapper(namespace, handler, elem, e)
 end
 ---Handles all GUI events and passes them to the appropriate wrapper function and handler
----@param e GuiEventData
+---@param e flib.GuiEventData
 function gui_events.dispatch_event(e)
 	local elem = e.element
 	if not elem then return end -- Can't resolve a handler with no element
@@ -91,7 +91,7 @@ function gui_events.register(new_handlers, namespace, override_old)
 end
 ---Converts the name of handlers to tags
 ---@param namespace namespace
----@param child GuiElemModuleDef
+---@param child modules.GuiElemModuleDef
 function gui_events.convert_handler_names(namespace, child)
 	local handler = child.handler
 	if not handler then return end -- Skip ones without handlers

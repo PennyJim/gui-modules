@@ -3,7 +3,7 @@ local handler_names = {
 	pin = "window_frame.pin",
 }
 
----@class WindowState.window_frame : WindowState
+---@class WindowState.window_frame : modules.WindowState
 -- Where custom fields would go
 
 ---WindowState.my_module
@@ -18,7 +18,7 @@ module.setup_state = function(state)
 end
 -- FIXME: Make sure it can do everything a frame can
 
----@class WindowFrameButtonsDef : ModuleDef
+---@class WindowFrameButtonsDef : modules.ModuleDef
 ---@field module_type "window_frame"
 -- where LuaLS parameter definitons go
 ---@field name string The name of the root frame
@@ -26,7 +26,7 @@ end
 ---@field has_pin_button boolean? Whether or not to add the pin button
 ---@field has_close_button boolean? Whether or not to add the close button
 ---@field draggable boolean?
----@field children GuiElemModuleDef[] The element that is contained within the frame
+---@field children modules.GuiElemModuleDef[] The element that is contained within the frame
 ---@field style string? The style of the root frame
 ---@field style_mods LuaStyle? Modifications to the style of the root frame
 ---@type ModuleParameterDict
@@ -44,7 +44,7 @@ module.parameters = {
 
 ---Creates the frame for a window with an exit button
 ---@param params WindowFrameButtonsDef
----@return GuiElemDef
+---@return flib.GuiElemDef
 function module.build_func(params)
 	params.draggable = params.draggable ~= false
 	return {
@@ -77,7 +77,8 @@ function module.build_func(params)
 							params.has_pin_button and { -- Pin button
 								type = "module", module_type = "frame_action_button",
 								name = "pin_button", tooltip = {"gui.flib-keep-open"},
-								sprite = "flib_pin", handler = handler_names.pin
+								sprite = "flib_pin", handler = handler_names.pin,
+								append = true,
 							} or {},
 							params.has_close_button and { -- Close button
 								type = "module", module_type = "frame_action_button",
@@ -94,7 +95,7 @@ function module.build_func(params)
 				}
 			}
 		}
-	} --[[@as GuiElemModuleDef]]
+	} --[[@as modules.GuiElemModuleDef]]
 end
 
 ---Handles the pinning of the window
@@ -120,4 +121,4 @@ module.handlers[handler_names.pin] = function (state)
   end
 end
 
-return module --[[@as GuiModuleDef]]
+return module --[[@as modules.GuiModuleDef]]

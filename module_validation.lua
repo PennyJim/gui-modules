@@ -1,4 +1,4 @@
----@param value ModuleParameterDef
+---@param value modules.ModuleParameterDef
 ---@param acceptable_type type[]
 ---@param module_type string
 local function type_validation(key, value, acceptable_type, module_type)
@@ -15,7 +15,7 @@ local function type_validation(key, value, acceptable_type, module_type)
 	end
 end
 
----@param value ModuleParameterDef
+---@param value modules.ModuleParameterDef
 ---@param acceptable_values any[]
 ---@param module_type string
 local function enum_validation(key, value, acceptable_values, module_type)
@@ -36,12 +36,12 @@ local function enum_validation(key, value, acceptable_values, module_type)
 end
 
 ---Validates the parameters of the module
----@param module GuiModuleDef
+---@param module modules.GuiModuleDef
 ---@param params ModuleParameterDict
 local function validate_module_params(module, params)
 	local parameter_description = module.parameters
 	local module_type = module.module_type
-	---@type {[string]:ModuleParameterDef}
+	---@type {[string]:modules.ModuleParameterDef}
 	local missing = {} -- mark every paramtere as 'missing'
 	for key, value in pairs(parameter_description) do
 		missing[key] = value

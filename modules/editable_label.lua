@@ -1,6 +1,6 @@
 local module = {module_type = "editable_label", handlers = {} --[[@as GuiModuleEventHandlers]]}
 
----@class WindowState.editable_label : WindowState
+---@class WindowState.editable_label : modules.WindowState
 -- Where custom fields would go
 
 local handler_names = {
@@ -14,7 +14,7 @@ local handler_names = {
 	unfocus = "editable_label.unfocus",
 }
 
----@class EditableLabelDef : ModuleDef
+---@class EditableLabelDef : modules.ModuleDef
 ---@field module_type "editable_label"
 -- where LuaLS parameter definitons go
 ---@field default_caption LocalisedString
@@ -44,7 +44,7 @@ module.parameters = {
 
 ---Creates the frame for a window with an exit button
 ---@param params EditableLabelDef
----@return GuiElemDef
+---@return flib.GuiElemDef
 function module.build_func(params)
 	local reserve_space = params.reserve_space ~= false
 	return {
@@ -98,11 +98,11 @@ function module.build_func(params)
 			-- removing the open_editor function would be simple enough.
 			{
 				type = "sprite-button", style = "mini_button_aligned_to_text_vertically_when_centered",
-				tooltip = {"gui-edit-label.edit-label"}, sprite = "utility/rename_icon_small_black",
+				tooltip = {"gui-edit-label.edit-label"}, sprite = "utility/rename_icon",
 				handler = handler_names.edit_button
 			}
 		}
-	} --[[@as GuiElemModuleDef]]
+	} --[[@as modules.GuiElemModuleDef]]
 end
 
 ---@param module LuaGuiElement
@@ -203,4 +203,4 @@ module.handlers[handler_names.unfocus] = function (state)
 	state.opened = nil
 end
 
-return module --[[@as GuiModuleDef]]
+return module --[[@as modules.GuiModuleDef]]

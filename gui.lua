@@ -5,28 +5,28 @@ end
 require("__gui-modules__.definitions")
 ---@class ModulesGlobal
 ---@field gui_states {[namespace]:WindowGlobal}
-global = {}
+storage = {}
 ---@class ModuleGuiLib : event_handler
 modules_gui = {}
 ---@type {[namespace]:WindowGlobal}
 local states
 
 ---@type flib_gui
-local flib_gui = require("__flib__.gui-lite")
+local flib_gui = require("__flib__.gui")
 local gui_events = require("__gui-modules__.gui_events")
 local validate_module_params = require("__gui-modules__.module_validation")
 require("util")
----@type table<string, fun(state:WindowState):LuaGuiElement?,any?>
+---@type table<string, fun(state:modules.WindowState):LuaGuiElement?,any?>
 local standard_handlers = {}
 
 --MARK: Modules
----@type {[string]:GuiModuleDef}
+---@type {[string]:modules.GuiModuleDef}
 local modules = {}
 do -- Grab the modules from startup settings
 	local prefix = "gui_module_add_"
 	for name, setting in pairs(settings.startup) do
 		if name:find(prefix) then
-			---@type GuiModuleDef
+			---@type modules.GuiModuleDef
 			local module = require(setting.value --[[@as string]])
 			modules[module.module_type] = module
 		end
@@ -41,9 +41,9 @@ local definitions = {} -- the definitions for each namespace
 local shortcut_namespace = {} -- map from shortcut names to namespace 
 ---@type table<string,namespace>
 local custominput_namespace = {} -- map from custominput event names to namespace
----@type table<namespace,table<string,GuiElemModuleDef>>
+---@type table<namespace,table<string,modules.GuiElemModuleDef>>
 local instances = {}
----@type table<namespace,fun(state:WindowState)>
+---@type table<namespace,fun(state:modules.WindowState)>
 local state_setups = {}
 
 ---@type table<namespace,WindowMetadata>?
@@ -53,10 +53,10 @@ local namespace_metadata = {} -- Hold onto it locally until we can compare it to
 
 ---Resolve the instantiable into a GuiElemModuleDef
 ---@param namespace namespace
----@param child GuiElemModuleDef
----@param arr GuiElemModuleDef[]
+---@param child modules.GuiElemModuleDef
+---@param arr modules.GuiElemModuleDef[]
 ---@param index integer
----@return GuiElemModuleDef
+---@return modules.GuiElemModuleDef
 local function resolve_instantiable(namespace, child, arr, index)
 	---MARK: instance/structs
 	local instance = instances[namespace][child.instantiable_name --[[@as string]]]
@@ -68,10 +68,10 @@ local function resolve_instantiable(namespace, child, arr, index)
 end
 ---Expands the module into their elements
 ---@param namespace namespace
----@param child GuiElemModuleDef
----@param arr GuiElemModuleDef[]
+---@param child modules.GuiElemModuleDef
+---@param arr modules.GuiElemModuleDef[]
 ---@param index integer
----@return GuiElemModuleDef
+---@return modules.GuiElemModuleDef
 local function expand_module(namespace, child, arr, index)
 	---MARK: build module
 	local mod_type = child.module_type
@@ -90,7 +90,7 @@ local function expand_module(namespace, child, arr, index)
 end
 ---Go over every element and preprocess it for use in flib_gui
 ---@param namespace namespace
----@param children GuiElemModuleDef[]
+---@param children modules.GuiElemModuleDef[]
 local function parse_children(namespace, children)
 	---MARK: preprocess
 	for i = 1, #children do
@@ -142,7 +142,7 @@ gui_metatable = setmetatable({}, gui_metatable)
 
 ---Sets up the state using all setup functions
 ---Given by modules and associated with namespace
----@param state WindowState
+---@param state modules.WindowState
 local function setup_state(state)
 	---MARK: Setup states
 	-- Modules
@@ -163,8 +163,8 @@ end
 ---Builds the gui in the namespace for the given player
 ---@param player LuaPlayer
 ---@param namespace string
----@param state WindowState?
----@return WindowState
+---@param state modules.WindowState?
+---@return modules.WindowState
 local function build(player, namespace, state)
 	---MARK: Build
 	local info = definitions[namespace]
@@ -177,7 +177,7 @@ local function build(player, namespace, state)
 		info.definition
 	)
 
-	---@type WindowState
+	---@type modules.WindowState
 	state = state or {}
 	state.root = root
 	state.elems = elems
@@ -224,7 +224,7 @@ local function setup()
 				log(string.format("Migrating %s from version %s to version %s", namespace, old_metadata.version, new_metadata.version))
 				for i, state in pairs(namespace_states) do
 					if i ~= 0 then
-						---@cast state WindowState
+						---@cast state modules.WindowState
 						if state.player.valid then
 							state.root.destroy()
 							state.elems = nil
@@ -239,7 +239,7 @@ local function setup()
 
 				-- Same version. Just let modules setup state
 				for index, player in pairs(game.players) do
-					local state = namespace_states[index] --[[@as WindowState]]
+					local state = namespace_states[index] --[[@as modules.WindowState]]
 					if state.root.valid then
 						setup_state(state)
 					else
@@ -257,7 +257,7 @@ end
 --#region Standard Event Handlers
 
 --- The function called to close the window
----@param state WindowState
+---@param state modules.WindowState
 function standard_handlers.close(state)
 	---MARK: Close
 	if state.pinning then
@@ -275,7 +275,7 @@ function standard_handlers.close(state)
 	standard_handlers.hide(state)
 end
 ---The function called by closing the window
----@param state WindowState
+---@param state modules.WindowState
 function standard_handlers.hide(state)
 	---MARK: Hide
 	if state.player.opened == state.root then
@@ -287,7 +287,7 @@ function standard_handlers.hide(state)
 		state.player.set_shortcut_toggled(state.shortcut, false)
 	end
 end
----@param state WindowState
+---@param state modules.WindowState
 function standard_handlers.show(state)
 	---MARK: Show
 	state.root.visible = true
@@ -299,7 +299,7 @@ function standard_handlers.show(state)
     state.player.opened = state.root
   end
 end
----@param state WindowState
+---@param state modules.WindowState
 ---@return boolean
 function standard_handlers.toggle(state)
 	---MARK: Toggle
@@ -349,7 +349,7 @@ local function input_or_shortcut_handler(EventData)
 	if not player then return end -- ??
 
 	local state = states[namespace][player.index]
-	---@cast state WindowState
+	---@cast state modules.WindowState
 	if not state or not state.root.valid then
 		state = build(player, namespace, state)
 	end
@@ -360,11 +360,11 @@ end
 ---MARK: init
 function modules_gui.on_init()
 	states = {}
-	global.gui_states = states
+	storage.gui_states = states
 	setup()
 end
 function modules_gui.on_load()
-	states = global.gui_states
+	states = storage.gui_states
 end
 ---Mentions when this library has changed (potentially breaking)
 ---@param ChangedData ConfigurationChangedData
@@ -396,7 +396,7 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---to register all instances at the start so you only have to build it
 ---@param namespace namespace
 ---@param parent LuaGuiElement
----@param new_child GuiElemModuleDef|GuiElemModuleDef[]
+---@param new_child modules.GuiElemModuleDef|modules.GuiElemModuleDef[]
 ---@param do_not_copy boolean?
 ---@return LuaGuiElement
 ---@return table<string, LuaGuiElement>
@@ -406,7 +406,7 @@ function modules_gui.add(namespace, parent, new_child, do_not_copy)
 		error{"gui-errors.undefined-namespace"}
 	end
 	if not do_not_copy then
-		new_child = table.deepcopy(new_child) --[[@as GuiElemModuleDef]]
+		new_child = table.deepcopy(new_child) --[[@as modules.GuiElemModuleDef]]
 	end
 	if new_child.type then
 		new_child = {new_child}
@@ -421,7 +421,7 @@ end
 ---just rebuild the UI if it's not
 ---@param namespace namespace
 ---@param player_index integer
----@return WindowState
+---@return modules.WindowState
 ---@nodiscard
 function modules_gui.get_state(namespace, player_index)
 	---MARK: get state
@@ -429,9 +429,9 @@ function modules_gui.get_state(namespace, player_index)
 		error{"gui-errors.undefined-namespace"}
 	end
 
-	---@type WindowMetadata|WindowState?
+	---@type WindowMetadata|modules.WindowState?
 	local state = states[namespace][player_index]
-	---@cast state WindowState?
+	---@cast state modules.WindowState?
 
 	if not state or not state.root or not state.root.valid then
 		local player = game.get_player(player_index)
@@ -486,7 +486,7 @@ function modules_gui.register_custominput(namespace, custominput, skip_check)
 end
 ---Registers the instance for use in the window's construction
 ---@param namespace namespace
----@param new_instances table<string,GuiElemModuleDef>
+---@param new_instances table<string,modules.GuiElemModuleDef>
 ---@param do_not_copy boolean?
 ---@param skip_check boolean? For internal use
 function modules_gui.register_instances(namespace, new_instances, do_not_copy, skip_check)
@@ -500,7 +500,7 @@ function modules_gui.register_instances(namespace, new_instances, do_not_copy, s
 			error{"gui-errors.instance-already-defined", namespace, name}
 		end
 		if not do_not_copy then
-			instance = table.deepcopy(instance) --[[@as GuiElemModuleDef]]
+			instance = table.deepcopy(instance) --[[@as modules.GuiElemModuleDef]]
 		end
 		local result = {instance}
 		parse_children(namespace, result)
@@ -509,7 +509,7 @@ function modules_gui.register_instances(namespace, new_instances, do_not_copy, s
 end
 ---Registers the WindowState setup function
 ---@param namespace namespace
----@param state_setup fun(state:WindowState)
+---@param state_setup fun(state:modules.WindowState)
 ---@param skip_check boolean? for internal use
 function modules_gui.register_state_setup(namespace, state_setup, skip_check)
 	---MARK: register setup func
@@ -523,7 +523,7 @@ end
 ---@param namespace namespace
 ---@param window_def GuiWindowDef
 ---@param handlers GuiModuleEventHandlers?
----@param instances table<string,GuiElemModuleDef>?
+---@param instances table<string,modules.GuiElemModuleDef>?
 function modules_gui.define_window(namespace, window_def, handlers, instances)
 	---MARK: window_def
 	-- Either create new namespace, or update missing values
@@ -575,10 +575,10 @@ end
 ---@class newWindowParams
 ---@field window_def GuiWindowDef
 ---@field handlers GuiModuleEventHandlers?
----@field instances table<string,GuiElemModuleDef>?
+---@field instances table<string,modules.GuiElemModuleDef>?
 ---@field shortcut_name string?
 ---@field custominput_name string?
----@field state_setup fun(state:WindowState)?
+---@field state_setup fun(state:modules.WindowState)?
 ---Creates a new namespace with the window definition
 ---@param params newWindowParams
 function modules_gui.new(params)

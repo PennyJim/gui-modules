@@ -1,6 +1,6 @@
 local module = {module_type = "split_pane", handlers = {} --[[@as GuiModuleEventHandlers]]}
 
----@class WindowState.my_module : WindowState
+---@class WindowState.my_module : modules.WindowState
 -- Where custom fields would go
 
 local handler_names = {
@@ -8,12 +8,12 @@ local handler_names = {
 	-- in both handler definitons and in the build_func
 }
 
----@class SplitPaneModuleDef : ModuleDef
+---@class SplitPaneModuleDef : modules.ModuleDef
 ---@field module_type "split_pane"
 -- where LuaLS parameter definitons go
 ---@field number_of_panes integer
 ---@field direction "horizontal"|"vertical"
----@field panes GuiElemModuleDef[]
+---@field panes modules.GuiElemModuleDef[]
 ---@field frame_styles string[]|string?
 ---@field stretch_panes boolean?
 ---@type ModuleParameterDict
@@ -28,7 +28,7 @@ module.parameters = {
 
 ---Creates the frame for a window with an exit button
 ---@param params SplitPaneModuleDef
----@return GuiElemDef
+---@return flib.GuiElemDef
 function module.build_func(params)
 	local panes = params.number_of_panes
 	local styles = params.frame_styles or "inside_shallow_frame_with_padding"
@@ -43,7 +43,7 @@ function module.build_func(params)
 		error{"module-errors.array-too-short", "children", panes, #pane_contents}
 	end
 
-	---@type GuiElemModuleDef[]
+	---@type modules.GuiElemModuleDef[]
 	local children = {}
 	---@type LuaStyle?
 	local child_style_mod
@@ -56,7 +56,7 @@ function module.build_func(params)
 			type = "frame", style = style or styles[i],
 			style_mods = child_style_mod,
 			children = {pane_contents[i]}
-		} --[[@as GuiElemModuleDef]]
+		} --[[@as modules.GuiElemModuleDef]]
 	end
 	return {
 		type = "flow", direction = params.direction,
@@ -65,4 +65,4 @@ function module.build_func(params)
 	}
 end
 
-return module --[[@as GuiModuleDef]]
+return module --[[@as modules.GuiModuleDef]]

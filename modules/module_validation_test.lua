@@ -48,4 +48,4 @@ function module.build_func() end
 -- module.parameters.my_optional_parameter.default = {} -- not in type table
 -- module.parameters.my_both_parameter.default = "not-in-enum"
 
-return module --[[@as GuiModuleDef]]
+return module --[[@as modules.GuiModuleDef]]

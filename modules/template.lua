@@ -1,6 +1,6 @@
 local module = {module_type = "my_module", handlers = {} --[[@as GuiModuleEventHandlers]]}
 
----@class WindowState.my_module : WindowState
+---@class WindowState.my_module : modules.WindowState
 -- Where custom fields would go
 
 ---WindowState.my_module
@@ -16,7 +16,7 @@ local handler_names = {
 	my_handler = "my_module.my_handler" -- Standardly prepended with module name to avoid naming collisions
 }
 
----@class myModuleParams : ModuleDef
+---@class myModuleParams : modules.ModuleDef
 ---@field module_type "my_module"
 -- where LuaLS parameter definitons go
 ---@type ModuleParameterDict
@@ -32,7 +32,7 @@ module.parameters = {
 
 ---Creates the frame for a window with an exit button
 ---@param params myModuleParams
----@return GuiElemDef
+---@return flib.GuiElemDef
 function module.build_func(params)
 	return {}
 end
@@ -43,4 +43,4 @@ module.handlers[handler_names.my_handler] = function (state, elem, OriginalEvent
 	-- Do stuff
 end
 
-return module --[[@as GuiModuleDef]]
+return module --[[@as modules.GuiModuleDef]]

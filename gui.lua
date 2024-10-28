@@ -3,6 +3,7 @@ if ... ~= "__gui-modules__.gui" then
 	return require("__gui-modules__.gui")
 end
 require("__gui-modules__.definitions")
+local util = require("util")
 ---@class ModulesGlobal
 ---@field gui_states {[namespace]:WindowGlobal}
 storage = {}
@@ -38,9 +39,13 @@ local namespaces = {} -- Whether or not the namespace was registered
 ---@type table<namespace,GuiWindowDef>
 local definitions = {} -- the definitions for each namespace
 ---@type table<string,namespace>
-local shortcut_namespace = {} -- map from shortcut names to namespace 
+local shortcut_namespace = {} -- map from shortcut names to namespace
+---@type table<namespace, string>
+local namespace_shortcut = {} -- map from namespace to shortcut
 ---@type table<string,namespace>
 local custominput_namespace = {} -- map from custominput event names to namespace
+---@type table<namespace, string>
+local namespace_custominput = {}
 ---@type table<namespace,table<string,modules.GuiElemModuleDef>>
 local instances = {}
 ---@type table<namespace,fun(state:modules.WindowState)>
@@ -469,7 +474,13 @@ function modules_gui.register_shortcut(namespace, shortcut, skip_check)
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
+
+	if not skip_check and namespace_shortcut[namespace] then
+		error{"gui-errors.shortcut-already-registered", namespace, shortcut}
+	end
+
 	shortcut_namespace[shortcut] = namespace
+	namespace_shortcut[namespace] = shortcut
 end
 ---Registers the custominput with the window in the namespace.
 ---@param namespace namespace
@@ -481,8 +492,13 @@ function modules_gui.register_custominput(namespace, custominput, skip_check)
 		error{"gui-errors.undefined-namespace-build"}
 	end
 
+	if not skip_check and namespace_custominput[namespace] then
+		error{"gui-errors.custominput-already-registered", namespace, custominput}
+	end
+
 	modules_gui.events[custominput] = input_or_shortcut_handler
 	custominput_namespace[custominput] = namespace
+	namespace_custominput[namespace] = custominput
 end
 ---Registers the instance for use in the window's construction
 ---@param namespace namespace
@@ -525,25 +541,29 @@ end
 ---@param handlers GuiModuleEventHandlers?
 ---@param instances table<string,modules.GuiElemModuleDef>?
 function modules_gui.define_window(namespace, window_def, handlers, instances)
+	window_def = util.copy(window_def)
 	---MARK: window_def
-	-- Either create new namespace, or update missing values
-	if not namespaces[namespace] then
-		modules_gui.new_namespace(namespace)
-	end
-
-	local shortcut = window_def.shortcut
-	if shortcut and not shortcut_namespace[shortcut] then
-		modules_gui.register_shortcut(namespace, shortcut, true)
-	end
-	local custominput = window_def.custominput
-	if custominput and not custominput_namespace[custominput] then
-		modules_gui.register_custominput(namespace, custominput, true)
-	end
 
 	if definitions[namespace] then
 		error{"gui-errors.namespace-already-defined", namespace}
 	end
 	definitions[namespace] = window_def
+
+	-- Either create new namespace, or update missing values
+	if not namespaces[namespace] then
+		modules_gui.new_namespace(namespace)
+	end
+
+	local shortcut = namespace_shortcut[namespace] or window_def.shortcut
+	window_def.shortcut = shortcut
+	if shortcut and not shortcut_namespace[shortcut] then
+		modules_gui.register_shortcut(namespace, shortcut, true)
+	end
+	local custominput = namespace_custominput[namespace] or window_def.custominput
+	window_def.custominput = custominput
+	if custominput and not custominput_namespace[custominput] then
+		modules_gui.register_custominput(namespace, custominput, true)
+	end
 
 	-- Save metadata until it can be put into global
 	namespace_metadata[namespace] = {

@@ -4,6 +4,7 @@ Date: ????
   Changes:
     - All (or at least most) of types are now scoped under `module`
     - Removed the frame action button module as it's one small function is no longer useful
+    - When a parameter has a type of `userdata`, it checks the `object_name` of it instead
   Bugfixes:
     - Shortcuts and custominputs defined in `gui.new` now fully overwrite any shortcut or custominput within the given definition
 ---------------------------------------------------------------------------------------------------

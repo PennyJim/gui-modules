@@ -3,8 +3,17 @@
 ---@param module_type string
 local function type_validation(key, value, acceptable_type, module_type)
 	local is_valid_type = false
+	---@type type|LuaObject.object_name
+	local our_type = type(value)
+
+	if our_type == "userdata" then
+---@diagnostic disable-next-line: cast-type-mismatch
+		---@cast value LuaObject
+		our_type = value.object_name
+	end
+
 	for _, valid_type in pairs(acceptable_type) do
-		if type(value) == valid_type then
+		if our_type == valid_type then
 			is_valid_type = true
 			break
 		end

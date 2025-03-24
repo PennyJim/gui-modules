@@ -2,23 +2,29 @@
 
 ---@alias namespace string
 
----@class Global
----@field gui_states {[string]:WindowGlobal}
+---@class Storage
+---@field gui_states {[string]:WindowStorage}
 
----@class modules.GuiElemModuleDef : flib.GuiElemDef
----@field type GuiElementType|"module"|"instantiable"
----@field children modules.GuiElemModuleDef[]|modules.GuiElemModuleDef?
----@field tab modules.GuiElemModuleDef?
----@field content modules.GuiElemModuleDef?
----@field module_type string? The name of the module
----@field instantiable_name string? The name of the instantiable
+---@class modules.GuiElemDef.base : flib.GuiElemDef
+---@field children modules.GuiElemDef[]|modules.GuiElemDef?
+---@field tab modules.GuiElemDef?
+---@field content modules.GuiElemDef?
 ---@field handler GuiModuleEventHandlerNames?
+
+---@class modules.GuiElemDef.instance : modules.GuiElemDef.base
+---@field type "instantiable"
+---@field instantiable_name string
+
+---@alias (partial) modules.GuiElemDef
+---| modules.GuiElemDef.base
+---| modules.GuiElemDef.instance
+--- --| modules.ModuleParams Each module should add themsselves
 
 ---@class GuiWindowDef
 ---@field namespace string the namespace the global table is put into
 ---@field version integer the version of the UI. Will automatically recreate the UI if the stored version is different than the given one
----@field instances table<string,modules.GuiElemModuleDef>?
----@field definition modules.GuiElemModuleDef the element/module used to create the window
+---@field instances table<string,modules.GuiElemDef>?
+---@field definition modules.GuiElemDef the element/module used to create the window
 ---@field root "top"|"left"|"center"|"goal"|"screen"
 ---@field custominput string?
 ---@field shortcut string?
@@ -28,7 +34,8 @@
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlerNames string|table<string,string>
 
----@class modules.ModuleDef : modules.GuiElemModuleDef
+---@class modules.ModuleParams : modules.GuiElemDef.base
+---@field type "module"
 ---@class modules.ModuleParameterDef
 ---@field is_optional boolean Whether or not this parameter is required
 ---@field type type[] The possible types of this parameter
@@ -36,10 +43,14 @@
 ---@field default any The value that nil is treated as
 ---@alias ModuleParameterDict table<string,modules.ModuleParameterDef>
 
+---The possible names of modules
+---@alias (partial) modules.types
+---| "my_module" An example
+
 ---@class modules.GuiModuleDef
----@field module_type string the name of the module
+---@field module_type modules.types the name of the module
 ---@field setup_state fun(state:modules.WindowState)? The function to setup state values used in this module
----@field build_func fun(parameters:table):modules.GuiElemModuleDef the function to return a GuiElemDef out of the passed definition
+---@field build_func fun(parameters:table):modules.GuiElemDef the function to return a GuiElemDef out of the passed definition
 ---@field parameters ModuleParameterDict a table defining the possible parameters of the module
 ---@field handlers GuiModuleEventHandlers the handlers the module uses.
 
@@ -57,5 +68,5 @@
 ---@class WindowMetadata
 ---@field version any The version of the window definition. Will reconstruct the window if this differs
 
----@class WindowGlobal : {[integer]: modules.WindowState}
+---@class WindowStorage : {[integer]: modules.WindowState}
 ---@field [0] WindowMetadata

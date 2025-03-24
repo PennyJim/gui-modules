@@ -18,7 +18,12 @@ module.setup_state = function(state)
 end
 -- FIXME: Make sure it can do everything a frame can
 
----@class WindowFrameButtonsDef : modules.ModuleDef
+---@alias (partial) modules.types
+---| "window_frame"
+---@alias (partial) modules.GuiElemDef
+---| WindowFrameParams
+
+---@class WindowFrameParams : modules.ModuleParams
 ---@field module_type "window_frame"
 -- where LuaLS parameter definitons go
 ---@field name string The name of the root frame
@@ -26,7 +31,7 @@ end
 ---@field has_pin_button boolean? Whether or not to add the pin button
 ---@field has_close_button boolean? Whether or not to add the close button
 ---@field draggable boolean?
----@field children modules.GuiElemModuleDef[] The element that is contained within the frame
+---@field children modules.GuiElemDef[] The element that is contained within the frame
 ---@field style string? The style of the root frame
 ---@field style_mods LuaStyle? Modifications to the style of the root frame
 ---@type ModuleParameterDict
@@ -43,8 +48,8 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params WindowFrameButtonsDef
----@return flib.GuiElemDef
+---@param params WindowFrameParams
+---@return modules.GuiElemDef.base
 function module.build_func(params)
 	params.draggable = params.draggable ~= false
 	return {
@@ -97,7 +102,7 @@ function module.build_func(params)
 				}
 			}
 		}
-	} --[[@as modules.GuiElemModuleDef]]
+	} --[[@as modules.GuiElemDef]]
 end
 
 ---Handles the pinning of the window

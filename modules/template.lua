@@ -16,7 +16,12 @@ local handler_names = {
 	my_handler = "my_module.my_handler" -- Standardly prepended with module name to avoid naming collisions
 }
 
----@class myModuleParams : modules.ModuleDef
+---@alias (partial) modules.types
+---| "my_module"
+---@alias (partial) modules.GuiElemDef
+---| myModuleParams
+
+---@class myModuleParams : modules.ModuleParams
 ---@field module_type "my_module"
 -- where LuaLS parameter definitons go
 ---@type ModuleParameterDict
@@ -32,7 +37,7 @@ module.parameters = {
 
 ---Creates the frame for a window with an exit button
 ---@param params myModuleParams
----@return flib.GuiElemDef
+---@return modules.GuiElemDef.base
 function module.build_func(params)
 	return {}
 end

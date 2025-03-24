@@ -2,7 +2,7 @@ local gui_events = {}
 ---@type GuiModuleEventHandlersMap
 local handlers = {}
 local tag_key = "__"..script.mod_name.."_handler"
----@type WindowGlobal[]
+---@type WindowStorage[]
 local states
 
 ---Creates the wrapper for the namespace
@@ -14,7 +14,7 @@ local function event_wrapper(namespace, handler, elem, e)
 	if not states then
 		states = storage.gui_states
 	end
-	local state = states[namespace]--[[@as WindowGlobal]][e.player_index]
+	local state = states[namespace]--[[@as WindowStorage]][e.player_index]
 	---@cast state modules.WindowState
 	if not state then return end
 
@@ -91,7 +91,7 @@ function gui_events.register(new_handlers, namespace, override_old)
 end
 ---Converts the name of handlers to tags
 ---@param namespace namespace
----@param child modules.GuiElemModuleDef
+---@param child modules.GuiElemDef
 function gui_events.convert_handler_names(namespace, child)
 	local handler = child.handler
 	if not handler then return end -- Skip ones without handlers

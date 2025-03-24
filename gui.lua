@@ -4,12 +4,12 @@ if ... ~= "__gui-modules__.gui" then
 end
 require("__gui-modules__.definitions")
 local util = require("util")
----@class ModulesGlobal
----@field gui_states {[namespace]:WindowGlobal}
+---@class ModulesStorage
+---@field gui_states {[namespace]:WindowStorage}
 storage = {}
 ---@class ModuleGuiLib : event_handler
 modules_gui = {}
----@type {[namespace]:WindowGlobal}
+---@type {[namespace]:WindowStorage}
 local states
 
 ---@type flib_gui
@@ -46,7 +46,7 @@ local namespace_shortcut = {} -- map from namespace to shortcut
 local custominput_namespace = {} -- map from custominput event names to namespace
 ---@type table<namespace, string>
 local namespace_custominput = {}
----@type table<namespace,table<string,modules.GuiElemModuleDef>>
+---@type table<namespace,table<string,modules.GuiElemDef>>
 local instances = {}
 ---@type table<namespace,fun(state:modules.WindowState)>
 local state_setups = {}
@@ -56,12 +56,12 @@ local namespace_metadata = {} -- Hold onto it locally until we can compare it to
 
 --#region Internal functions
 
----Resolve the instantiable into a GuiElemModuleDef
+---Resolve the instantiable into a GuiElemDef
 ---@param namespace namespace
----@param child modules.GuiElemModuleDef
----@param arr modules.GuiElemModuleDef[]
+---@param child modules.GuiElemDef
+---@param arr modules.GuiElemDef[]
 ---@param index integer
----@return modules.GuiElemModuleDef
+---@return modules.GuiElemDef
 local function resolve_instantiable(namespace, child, arr, index)
 	---MARK: instance/structs
 	local instance = instances[namespace][child.instantiable_name --[[@as string]]]
@@ -73,10 +73,10 @@ local function resolve_instantiable(namespace, child, arr, index)
 end
 ---Expands the module into their elements
 ---@param namespace namespace
----@param child modules.GuiElemModuleDef
----@param arr modules.GuiElemModuleDef[]
+---@param child modules.GuiElemDef
+---@param arr modules.GuiElemDef[]
 ---@param index integer
----@return modules.GuiElemModuleDef
+---@return modules.GuiElemDef
 local function expand_module(namespace, child, arr, index)
 	---MARK: build module
 	local mod_type = child.module_type
@@ -95,7 +95,7 @@ local function expand_module(namespace, child, arr, index)
 end
 ---Go over every element and preprocess it for use in flib_gui
 ---@param namespace namespace
----@param children modules.GuiElemModuleDef[]
+---@param children modules.GuiElemDef[]
 local function parse_children(namespace, children)
 	---MARK: preprocess
 	for i = 1, #children do
@@ -210,7 +210,7 @@ local function setup()
 	for namespace in pairs(namespaces) do
 		local new_metadata = namespace_metadata[namespace]
 
-		---@type WindowGlobal?
+		---@type WindowStorage?
 		local namespace_states = states[namespace]
 
 		if not namespace_states then
@@ -401,7 +401,7 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---to register all instances at the start so you only have to build it
 ---@param namespace namespace
 ---@param parent LuaGuiElement
----@param new_child modules.GuiElemModuleDef|modules.GuiElemModuleDef[]
+---@param new_child modules.GuiElemDef|modules.GuiElemDef[]
 ---@param do_not_copy boolean?
 ---@return LuaGuiElement
 ---@return table<string, LuaGuiElement>
@@ -411,7 +411,7 @@ function modules_gui.add(namespace, parent, new_child, do_not_copy)
 		error{"gui-errors.undefined-namespace"}
 	end
 	if not do_not_copy then
-		new_child = table.deepcopy(new_child) --[[@as modules.GuiElemModuleDef]]
+		new_child = table.deepcopy(new_child) --[[@as modules.GuiElemDef]]
 	end
 	if new_child.type then
 		new_child = {new_child}
@@ -502,7 +502,7 @@ function modules_gui.register_custominput(namespace, custominput, skip_check)
 end
 ---Registers the instance for use in the window's construction
 ---@param namespace namespace
----@param new_instances table<string,modules.GuiElemModuleDef>
+---@param new_instances table<string,modules.GuiElemDef>
 ---@param do_not_copy boolean?
 ---@param skip_check boolean? For internal use
 function modules_gui.register_instances(namespace, new_instances, do_not_copy, skip_check)
@@ -516,7 +516,7 @@ function modules_gui.register_instances(namespace, new_instances, do_not_copy, s
 			error{"gui-errors.instance-already-defined", namespace, name}
 		end
 		if not do_not_copy then
-			instance = table.deepcopy(instance) --[[@as modules.GuiElemModuleDef]]
+			instance = table.deepcopy(instance) --[[@as modules.GuiElemDef]]
 		end
 		local result = {instance}
 		parse_children(namespace, result)
@@ -539,7 +539,7 @@ end
 ---@param namespace namespace
 ---@param window_def GuiWindowDef
 ---@param handlers GuiModuleEventHandlers?
----@param instances table<string,modules.GuiElemModuleDef>?
+---@param instances table<string,modules.GuiElemDef>?
 function modules_gui.define_window(namespace, window_def, handlers, instances)
 	window_def = util.copy(window_def)
 	---MARK: window_def
@@ -595,7 +595,7 @@ end
 ---@class newWindowParams
 ---@field window_def GuiWindowDef
 ---@field handlers GuiModuleEventHandlers?
----@field instances table<string,modules.GuiElemModuleDef>?
+---@field instances table<string,modules.GuiElemDef>?
 ---@field shortcut_name string?
 ---@field custominput_name string?
 ---@field state_setup fun(state:modules.WindowState)?

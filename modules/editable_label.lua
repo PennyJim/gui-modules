@@ -13,7 +13,12 @@ local handler_names = {
 	unfocus = "editable_label.unfocus",
 }
 
----@class EditableLabelDef : modules.ModuleDef
+---@alias (partial) modules.types
+---| "editable_label"
+---@alias (partial) modules.GuiElemDef
+---| EditableLabelDef
+
+---@class EditableLabelDef : modules.ModuleParams
 ---@field module_type "editable_label"
 -- where LuaLS parameter definitons go
 ---@field default_caption LocalisedString
@@ -45,7 +50,7 @@ module.parameters = {
 
 ---Creates the frame for a window with an exit button
 ---@param params EditableLabelDef
----@return flib.GuiElemDef
+---@return modules.GuiElemDef.base
 function module.build_func(params)
 	local reserve_space = params.reserve_space ~= false
 	return {
@@ -83,7 +88,7 @@ function module.build_func(params)
 				handler = handler_names.edit_button
 			}
 		}
-	} --[[@as modules.GuiElemModuleDef]]
+	} --[[@as modules.GuiElemDef]]
 end
 
 ---@param state WindowState.editable_label

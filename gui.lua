@@ -427,6 +427,7 @@ end
 ---@param namespace namespace
 ---@param player_index integer
 ---@return modules.WindowState
+---@return boolean did_build Whether or not the state had to be built
 ---@nodiscard
 function modules_gui.get_state(namespace, player_index)
 	---MARK: get state
@@ -436,6 +437,7 @@ function modules_gui.get_state(namespace, player_index)
 
 	---@type WindowMetadata|modules.WindowState?
 	local state = states[namespace][player_index]
+	local built_state = false
 	---@cast state modules.WindowState?
 
 	if not state or not state.root or not state.root.valid then
@@ -444,9 +446,10 @@ function modules_gui.get_state(namespace, player_index)
 			error{"gui-errors.invalid-player"}
 		end
 		state = build(player, namespace, state)
+		built_state = true
 	end
 
-	return state
+	return state, built_state
 end
 
 ---Registers a namespace for use

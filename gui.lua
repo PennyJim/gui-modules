@@ -322,11 +322,14 @@ end
 ---@param EventData EventData.on_player_created
 local function created_player_handler(EventData)
 	---MARK: player created
-	local player = game.get_player(EventData.player_index)
-	if not player then return end -- ??
+	local player_index = EventData.player_index
 
 	for namespace in pairs(namespaces) do
-		build(player, namespace)
+		-- The state may have already been built by the get_state handler
+		-- Let the get state handler built it itself since it already
+		-- has the check built-in
+---@diagnostic disable-next-line: discard-returns
+		modules_gui.get_state(namespace, player_index)
 	end
 end
 ---Handles the removal of players
@@ -499,7 +502,7 @@ function modules_gui.register_custominput(namespace, custominput, skip_check)
 		error{"gui-errors.custominput-already-registered", namespace, custominput}
 	end
 
-	modules_gui.events[custominput] = input_or_shortcut_handler
+	modules_gui.events[script.get_event_id(custominput)] = input_or_shortcut_handler
 	custominput_namespace[custominput] = namespace
 	namespace_custominput[namespace] = custominput
 end

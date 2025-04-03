@@ -34,7 +34,7 @@ local handler_names = {
 ---textfield values
 ---@field icon_selector boolean?
 -- label values
----@field caption LocalisedString?
+---@field caption string?
 ---@field style string?
 ---@field style_mods LuaStyle?
 ---@field tooltip LocalisedString?
@@ -48,7 +48,7 @@ module.parameters = {
 	-- textfield values
 	icon_selector = {is_optional = true, type = {"boolean"}, default = true},
 	-- label values
-	caption = {is_optional = true, type = {"string","table"}},
+	caption = {is_optional = true, type = {"string"}},
 	style = {is_optional = true, type = {"string"}},
 	style_mods = {is_optional = true, type = {"table"}},
 	tooltip = {is_optional = true, type = {"string","table"}},
@@ -60,8 +60,10 @@ module.parameters = {
 function module.build_func(params)
 	local reserve_space = params.reserve_space ~= false
 	return {
-		type = "flow", direction = "horizontal",
-		style = "flib_indicator_flow",
+		args={
+			type = "flow", direction = "horizontal",
+			style = "flib_indicator_flow",
+		},
 ---@diagnostic disable-next-line: missing-fields
 		style_mods = {
 			minimal_height = 28,
@@ -69,18 +71,23 @@ function module.build_func(params)
 		},
 		children = {
 			{
-				type = "label", caption = params.caption or params.default_caption,
-				tags = {default_caption = params.default_caption},
+				args = {
+					type = "label", caption = params.caption or params.default_caption,
+					tags = {default_caption = params.default_caption},
+					--user specified:
+					style = params.style, tooltip = params.tooltip,
+					elem_tooltip = params.elem_tooltip,
+				},
 				handler = {[defines.events.on_gui_confirmed]=params.confirm_handler},
 				-- user specified:
-				style = params.style, style_mods = params.style_mods,
-				tooltip = params.tooltip,
-				elem_tooltip = params.elem_tooltip,
+				style_mods = params.style_mods
 			},
 			{
-				type = "textfield", visible = false,
-				lose_focus_on_confirm = true, text = params.caption,
-				icon_selector = params.icon_selector ~= false,
+				args = {
+					type = "textfield", visible = false,
+					lose_focus_on_confirm = true, text = params.caption,
+					icon_selector = params.icon_selector ~= false,
+				},
 				handler = {
 					[defines.events.on_gui_confirmed]=handler_names.confirm,
 					[defines.events.on_gui_closed]=handler_names.cancel,
@@ -89,8 +96,10 @@ function module.build_func(params)
 				}
 			},
 			{
-				type = "sprite-button", style = "mini_button_aligned_to_text_vertically_when_centered",
-				tooltip = {"gui-edit-label.edit-label"}, sprite = "utility/rename_icon",
+				args = {
+					type = "sprite-button", style = "mini_button_aligned_to_text_vertically_when_centered",
+					tooltip = {"gui-edit-label.edit-label"}, sprite = "utility/rename_icon",
+				},
 				handler = handler_names.edit_button
 			}
 		}

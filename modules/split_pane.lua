@@ -64,14 +64,18 @@ function module.build_func(params)
 	end
 	for i = 1, panes, 1 do
 		children[i] = {
-			type = "frame", style = style or styles[i],
+			args = {
+				type = "frame", style = style or styles[i],
+			},
 			style_mods = child_style_mod,
 			children = {pane_contents[i]}
 		} --[[@as modules.GuiElemDef]]
 	end
 	return {
-		type = "flow", direction = params.direction,
-		style = "inset_frame_container_"..params.direction.."_flow" --[[@as string]],
+		args = {
+			type = "flow", direction = params.direction,
+			style = "inset_frame_container_"..params.direction.."_flow" --[[@as string]],
+		},
 		children = children
 	}
 end

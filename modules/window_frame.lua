@@ -60,55 +60,63 @@ module.parameters = {
 function module.build_func(params)
 	params.draggable = params.draggable ~= false
 	return {
-		type = "frame", name = params.name,
+		args = {
+			type = "frame", name = params.name,
+			visible = false, style = params.style
+		},
 ---@diagnostic disable-next-line: missing-fields
-		visible = false, elem_mods = { auto_center = true },
+		elem_mods = { auto_center = true },
 		handler = {[defines.events.on_gui_closed] = "close"},
-		style = params.style, style_mods = params.style_mods,
-		children = {
-			{
+		style_mods = params.style_mods,
+		children = {{
+			args = {
 				type = "flow", direction = "vertical",
-				children = {
-					{ -- The titlebar
+			},
+			children = {
+				{ -- The titlebar
+					args = {
 						type = "flow", style = "flib_titlebar_flow",
-						direction = "horizontal", drag_target = params.draggable and params.name or nil,
-						children = {
-							{ -- Title
-								type = "label", style = "frame_title",
-								caption = params.title, ignored_by_interaction = true
-							},
-							{ -- Drag handle
-								type = "empty-widget", style = params.draggable and "flib_titlebar_drag_handle" or "flib_horizontal_pusher",
-								ignored_by_interaction = true,
-							},
-							-- params.has_config_button and { -- Config button
-							-- 	type = "sprite-button", style = "frame_action_button",
-							-- 	name = "config_button", tooltip = {"gui.flib-settings"},
-							-- 	sprite = "flib_settings_white", hovered_sprite = "flib_settings_black",
-							-- 	handler = params.config_handler,
-							-- } or {},
-							params.has_pin_button and { -- Pin button
-								type = "sprite-button", style = "frame_action_button",
-								name = "pin_button", tooltip = {"gui.flib-keep-open"},
-								sprite = "flib_pin_white", hovered_sprite = "flib_pin_black",
-								handler = handler_names.pin,
-							} or {},
-							params.has_close_button and { -- Close button
-								type = "sprite-button", style = "frame_action_button",
-								name = "window_close_button", tooltip = {"gui.close-instruction"},
-								sprite = "utility/close",
-								handler = "hide",
-							} or {},
-						}
+						direction = "horizontal",
 					},
-					{ -- The flow for the contents
+					drag_target = params.draggable and params.name or nil,
+					children = {
+						{args={ -- Title
+							type = "label", style = "frame_title",
+							caption = params.title, ignored_by_interaction = true
+						}},
+						{args={ -- Drag handle
+							type = "empty-widget", style = params.draggable and "flib_titlebar_drag_handle" or "flib_horizontal_pusher",
+							ignored_by_interaction = true,
+						}},
+						-- params.has_config_button and {args={ -- Config button
+						-- 	type = "sprite-button", style = "frame_action_button",
+						-- 	name = "config_button", tooltip = {"gui.flib-settings"},
+						-- 	sprite = "flib_settings_white", hovered_sprite = "flib_settings_black",
+						-- 	handler = params.config_handler,
+						-- }} or {},
+						params.has_pin_button and {args={ -- Pin button
+							type = "sprite-button", style = "frame_action_button",
+							name = "pin_button", tooltip = {"gui.flib-keep-open"},
+							sprite = "flib_pin_white", hovered_sprite = "flib_pin_black",
+							handler = handler_names.pin,
+						}} or {},
+						params.has_close_button and {args={ -- Close button
+							type = "sprite-button", style = "frame_action_button",
+							name = "window_close_button", tooltip = {"gui.close-instruction"},
+							sprite = "utility/close",
+							handler = "hide",
+						}} or {},
+					}
+				},
+				{ -- The flow for the contents
+					args = {
 						type = "flow", style = "inset_frame_container_horizontal_flow",
 						direction = "horizontal",
-						children = params.children
-					}
+					},
+					children = params.children
 				}
 			}
-		}
+		}}
 	} --[[@as modules.GuiSimpleElemDef]]
 end
 

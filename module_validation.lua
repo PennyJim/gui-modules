@@ -58,7 +58,6 @@ local function validate_module_params(module, params)
 
 	-- Validate each present parameter
 	for key, value in pairs(params) do
-		if key == "type" or key == "module_type" then goto continue end
 		missing[key] = nil -- mark as not missing
 		local acceptable = parameter_description[key]
 
@@ -75,7 +74,6 @@ local function validate_module_params(module, params)
 
 		-- Additional parameter checking possible?
 		-- Might grow as the parameters's fields expands
-    ::continue::
 	end
 
 	-- Error for missing required parameters

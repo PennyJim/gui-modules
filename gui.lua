@@ -12,27 +12,12 @@ modules_gui = {}
 ---@type {[namespace]:WindowStorage}
 local states
 
----@type flib_gui
-local flib_gui = require("__flib__.gui")
+local modules = require("__gui-modules__.modules")
 local gui_events = require("__gui-modules__.gui_events")
-local validate_module_params = require("__gui-modules__.module_validation")
+local builder = require("__gui-modules__.gui_builder")
 require("util")
 ---@type table<string, fun(state:modules.WindowState):LuaGuiElement?,any?>
 local standard_handlers = {}
-
---MARK: Modules
----@type {[string]:modules.GuiModuleDef}
-local modules = {}
-do -- Grab the modules from startup settings
-	local prefix = "gui_module_add_"
-	for name, setting in pairs(settings.startup) do
-		if name:find(prefix) then
-			---@type modules.GuiModuleDef
-			local module = require(setting.value --[[@as string]])
-			modules[module.module_type] = module
-		end
-	end
-end
 
 ---@type table<namespace,true>
 local namespaces = {} -- Whether or not the namespace was registered
@@ -46,8 +31,7 @@ local namespace_shortcut = {} -- map from namespace to shortcut
 local custominput_namespace = {} -- map from custominput event names to namespace
 ---@type table<namespace, string>
 local namespace_custominput = {}
----@type table<namespace,table<string,modules.GuiElemDef>>
-local instances = {}
+local instances = builder.instances
 ---@type table<namespace,fun(state:modules.WindowState)>
 local state_setups = {}
 
@@ -55,89 +39,6 @@ local state_setups = {}
 local namespace_metadata = {} -- Hold onto it locally until we can compare it to the global and store it there
 
 --#region Internal functions
-
----Resolve the instantiable into a GuiElemDef
----@param namespace namespace
----@param child modules.GuiElemDef
----@param arr modules.GuiElemDef[]
----@param index integer
----@return modules.GuiElemDef
-local function resolve_instantiable(namespace, child, arr, index)
-	---MARK: instance/structs
-	local instance = instances[namespace][child.instantiable_name --[[@as string]]]
-	if not instance then
-		error{"gui-errors.invalid-instantiable", namespace, child}
-	end
-	arr[index] = instance
-	return instance
-end
----Expands the module into their elements
----@param namespace namespace
----@param child modules.GuiElemDef
----@param arr modules.GuiElemDef[]
----@param index integer
----@return modules.GuiElemDef
-local function expand_module(namespace, child, arr, index)
-	---MARK: build module
-	local mod_type = child.module_type
-	if not mod_type then 
-		error{"gui-errors.no-module-name"}
-	end
-
-	local module = modules[mod_type]
-	validate_module_params(module, child)
-	-- Register the module handlers
-	gui_events.register(module.handlers, namespace)
-	-- replace the module element with the expanded elements
-	local module = module.build_func(child)
-	arr[index] = module
-	return module
-end
----Go over every element and preprocess it for use in flib_gui
----@param namespace namespace
----@param children modules.GuiElemDef[]
-local function parse_children(namespace, children)
-	---MARK: preprocess
-	for i = 1, #children do
-		-- Cache the child and type
-		local child = children[i]
-		local type = child.type
-		local do_recruse = true
-
-		-- Resolve instantiable if it is one
-		if type == "instantiable" then
-			do_recruse = false
-			child = resolve_instantiable(namespace, child, children, i)
-			type = child.type
-		end
-
-		-- Expand the module if it is one
-		if type == "module" then
-			child = expand_module(namespace, child, children, i)
-			type = child.type
-		end
-
-		if type then
-			-- Convert handlers
-			gui_events.convert_handler_names(namespace, child)
-
-			-- Recurse into children, if there are any
-			local children = child.children
-			if do_recruse and children then
-				-- Convert single-children into an array
-				if children.type then
-					children = {children}
-					child.children = children
-				end
-				parse_children(namespace, children)
-			end
-
-		-- treat a tab and content like a short children array
-		elseif child.tab and child.content then
-			parse_children(namespace, {child.tab, child.content})
-		end
-	end
-end
 
 local gui_metatable = {
 	__index = modules_gui
@@ -177,15 +78,17 @@ local function build(player, namespace, state)
 		error({"gui-errors.undefined-namespace-build"}, 2)
 	end
 
-	local elems, root = flib_gui.add(
+	local elems = {}
+	local root = builder.buildprocessed(
 		player.gui[info.root],
-		info.definition
+		info.definition,
+		elems
 	)
 
 	---@type modules.WindowState
 	state = state or {}
 	state.root = root
-	state.elems = elems
+	state.elems = elems -- Maybe go through and delete every element that might've not been invalidated?
 	state.player = player
 	state.pinned = not not state.pinned
 	state.shortcut = info.shortcut -- FIXME: Doesn't get shortcuts registered outside window_def
@@ -406,22 +309,31 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---@param parent LuaGuiElement
 ---@param children modules.GuiElemDef|modules.GuiElemDef[]
 ---@param do_not_copy boolean?
+---@param elems? table<string,LuaGuiElement> The table to accumulate references into. Will default to the elems table in the state
 ---@return LuaGuiElement
 ---@return table<string, LuaGuiElement>
-function modules_gui.add(namespace, parent, children, do_not_copy)
+function modules_gui.add(namespace, parent, children, do_not_copy, elems)
 	---MARK: add
 	if not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
 	if not do_not_copy then
-		new_child = table.deepcopy(new_child) --[[@as modules.GuiElemDef]]
+		children = table.deepcopy(children) --[[@as modules.GuiElemDef]]
 	end
 	if not children[1] then
 		children = {children}
 	end
-	parse_children(namespace, new_child)
-	local elems,new_elem = flib_gui.add(parent, new_child, states[namespace][parent.player_index].elems)
-	return new_elem,elems
+	if not elems then
+		elems = states[namespace][parent.player_index].elems
+	end
+
+	---@type LuaGuiElement
+	local first
+	for _, child in pairs(children) do
+		local elem = builder.build(namespace, parent, child, elems)
+		if not first then first = elem end
+	end
+	return first,elems
 end
 
 ---Returns the WindowState of the given player and namespace.
@@ -525,8 +437,7 @@ function modules_gui.register_instances(namespace, new_instances, do_not_copy, s
 			instance = table.deepcopy(instance) --[[@as modules.GuiElemDef]]
 		end
 		local result = {instance}
-		parse_children(namespace, result)
-		registered_instances[name] = result[1]
+		registered_instances[name] = builder.preprocess(namespace, instance)
 	end
 end
 ---Registers the WindowState setup function
@@ -553,6 +464,8 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	if definitions[namespace] then
 		error{"gui-errors.namespace-already-defined", namespace}
 	end
+	window_def.definition = builder.preprocess(namespace, window_def.definition)
+	---@cast window_def GuiWindowProcessedDef
 	definitions[namespace] = window_def
 
 	-- Either create new namespace, or update missing values
@@ -593,10 +506,6 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	if instances then
 		modules_gui.register_instances(namespace, instances, true, true)
 	end
-
-	local results = {window_def.definition}
-	parse_children(namespace, results)
-	window_def.definition = results[1]
 end
 ---@class newWindowParams
 ---@field window_def GuiWindowDef

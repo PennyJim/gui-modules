@@ -1,6 +1,8 @@
-local module = {module_type = "window_frame", handlers = {} --[[@as GuiModuleEventHandlers]]}
-local handler_names = {
-	pin = "window_frame.pin",
+---@type modules.GuiModuleDef
+---@diagnostic disable-next-line: missing-fields
+local module = {
+	module_type = "window_frame",
+	handlers = {}
 }
 
 ---@class WindowState.window_frame : modules.WindowState
@@ -18,13 +20,19 @@ module.setup_state = function(state)
 end
 -- FIXME: Make sure it can do everything a frame can
 
+local handler_names = {
+	pin = "window_frame.pin",
+}
+
 ---@alias (partial) modules.types
 ---| "window_frame"
----@alias (partial) modules.GuiElemDef
----| WindowFrameParams
-
----@class WindowFrameParams : modules.ModuleParams
+---@alias (partial) modules.ModuleElems
+---| modules.WindowFrameArgs
+---@class modules.WindowFrameElem
 ---@field module_type "window_frame"
+---@field args modules.WindowFrameArgs
+
+---@class modules.WindowFrameArgs
 -- where LuaLS parameter definitons go
 ---@field name string The name of the root frame
 ---@field title LocalisedString The title of the frame
@@ -48,8 +56,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params WindowFrameParams
----@return modules.GuiElemDef.base
+---@param params modules.WindowFrameArgs
 function module.build_func(params)
 	params.draggable = params.draggable ~= false
 	return {
@@ -102,7 +109,7 @@ function module.build_func(params)
 				}
 			}
 		}
-	} --[[@as modules.GuiElemDef]]
+	} --[[@as modules.GuiSimpleElemDef]]
 end
 
 ---Handles the pinning of the window
@@ -128,4 +135,4 @@ module.handlers[handler_names.pin] = function (state)
   end
 end
 
-return module --[[@as modules.GuiModuleDef]]
+return module

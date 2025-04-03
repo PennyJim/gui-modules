@@ -1,4 +1,9 @@
-local module = {module_type = "my_module", handlers = {} --[[@as GuiModuleEventHandlers]]}
+---@type modules.GuiModuleDef
+---@diagnostic disable-next-line: missing-fields
+local module = {
+	module_type = "my_module",
+	handlers = {}
+}
 
 ---@class WindowState.my_module : modules.WindowState
 -- Where custom fields would go
@@ -18,11 +23,13 @@ local handler_names = {
 
 ---@alias (partial) modules.types
 ---| "my_module"
----@alias (partial) modules.GuiElemDef
----| myModuleParams
-
----@class myModuleParams : modules.ModuleParams
+---@alias (partial) modules.ModuleElems
+---| modules.myModuleElem
+---@class modules.myModuleElem
 ---@field module_type "my_module"
+---@field args modules.myModuleArgs
+
+---@class modules.myModuleArgs
 -- where LuaLS parameter definitons go
 ---@type ModuleParameterDict
 module.parameters = {
@@ -36,10 +43,11 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params myModuleParams
----@return modules.GuiElemDef.base
+---@param params modules.myModuleArgs
 function module.build_func(params)
-	return {}
+	return {
+
+	}--[[@as modules.GuiSimpleElemDef]] -- This helps luals guide you
 end
 
 -- How to define handlers
@@ -48,4 +56,4 @@ module.handlers[handler_names.my_handler] = function (state, elem, OriginalEvent
 	-- Do stuff
 end
 
-return module --[[@as modules.GuiModuleDef]]
+return module

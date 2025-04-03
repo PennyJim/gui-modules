@@ -1,5 +1,10 @@
 ---@diagnostic disable: assign-type-mismatch
-local module = {module_type = "module_validation_test", handlers = {} --[[@as GuiModuleEventHandlers]]}
+---@type modules.GuiModuleDef
+---@diagnostic disable-next-line: missing-fields
+local module = {
+	module_type = "module_validation_test",
+	handlers = {}
+}
 
 ---@type ModuleParameterDict
 module.parameters = {
@@ -20,6 +25,7 @@ module.parameters = {
 	}
 }
 
+---@diagnostic disable-next-line: missing-return
 function module.build_func() end
 
 -- Strictly speaking, this does not test every case so

@@ -36,7 +36,7 @@ end
 
 ---@type table<namespace,true>
 local namespaces = {} -- Whether or not the namespace was registered
----@type table<namespace,GuiWindowDef>
+---@type table<namespace,GuiWindowProcessedDef>
 local definitions = {} -- the definitions for each namespace
 ---@type table<string,namespace>
 local shortcut_namespace = {} -- map from shortcut names to namespace
@@ -404,11 +404,11 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---to register all instances at the start so you only have to build it
 ---@param namespace namespace
 ---@param parent LuaGuiElement
----@param new_child modules.GuiElemDef|modules.GuiElemDef[]
+---@param children modules.GuiElemDef|modules.GuiElemDef[]
 ---@param do_not_copy boolean?
 ---@return LuaGuiElement
 ---@return table<string, LuaGuiElement>
-function modules_gui.add(namespace, parent, new_child, do_not_copy)
+function modules_gui.add(namespace, parent, children, do_not_copy)
 	---MARK: add
 	if not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
@@ -416,8 +416,8 @@ function modules_gui.add(namespace, parent, new_child, do_not_copy)
 	if not do_not_copy then
 		new_child = table.deepcopy(new_child) --[[@as modules.GuiElemDef]]
 	end
-	if new_child.type then
-		new_child = {new_child}
+	if not children[1] then
+		children = {children}
 	end
 	parse_children(namespace, new_child)
 	local elems,new_elem = flib_gui.add(parent, new_child, states[namespace][parent.player_index].elems)

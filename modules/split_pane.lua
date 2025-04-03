@@ -1,4 +1,9 @@
-local module = {module_type = "split_pane", handlers = {} --[[@as GuiModuleEventHandlers]]}
+---@type modules.GuiModuleDef
+---@diagnostic disable-next-line: missing-fields
+local module = {
+	module_type = "split_pane",
+	handlers = {}
+}
 
 ---@class WindowState.my_module : modules.WindowState
 -- Where custom fields would go
@@ -10,11 +15,13 @@ local handler_names = {
 
 ---@alias (partial) modules.types
 ---| "split_pane"
----@alias (partial) modules.GuiElemDef
----| SplitPaneModuleDef
-
----@class SplitPaneModuleDef : modules.ModuleParams
+---@alias (partial) modules.ModuleElems
+---| modules.SplitPaneModuleElem
+---@class modules.SplitPaneModuleElem
 ---@field module_type "split_pane"
+---@field args modules.SplitPaneModuleArgs
+
+---@class modules.SplitPaneModuleArgs
 -- where LuaLS parameter definitons go
 ---@field number_of_panes integer
 ---@field direction "horizontal"|"vertical"
@@ -32,8 +39,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params SplitPaneModuleDef
----@return modules.GuiElemDef.base
+---@param params modules.SplitPaneModuleArgs
 function module.build_func(params)
 	local panes = params.number_of_panes
 	local styles = params.frame_styles or "inside_shallow_frame_with_padding"
@@ -70,4 +76,4 @@ function module.build_func(params)
 	}
 end
 
-return module --[[@as modules.GuiModuleDef]]
+return module

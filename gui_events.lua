@@ -91,15 +91,13 @@ function gui_events.register(new_handlers, namespace, override_old)
 end
 ---Converts the name of handlers to tags
 ---@param namespace namespace
----@param child modules.GuiElemDef
-function gui_events.convert_handler_names(namespace, child)
-	local handler = child.handler
-	if not handler then return end -- Skip ones without handlers
-	local handler_type = type(handler)
+---@param handler GuiModuleEventHandlerNames
+---@param elem LuaGuiElement.add_param
+function gui_events.convert_handler_names(namespace, handler, elem)
 
 	---@type GuiModuleEventHandlerNames
 	local handler_name
-	if handler_type == "table" then
+	if type(handler) == "table" then
 		handler_name = {}
 		for key, value in pairs(handler) do
 			handler_name[tostring(key)] = namespace.."/"..value
@@ -108,14 +106,12 @@ function gui_events.convert_handler_names(namespace, child)
 		handler_name = namespace.."/"..handler
 	end
 
-	local tags = child.tags or {}
-	child.tags = tags
+	local tags = elem.tags or {}
+	elem.tags = tags
 	if tags[tag_key] then
 		error{"gui-errors.unable-to-tag-handler"}
 	end
 	tags[tag_key] = handler_name
-
-	child.handler = nil
 end
 
 ---@type event_handler.events

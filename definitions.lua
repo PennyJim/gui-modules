@@ -5,20 +5,53 @@
 ---@class Storage
 ---@field gui_states {[string]:WindowStorage}
 
----@class modules.GuiElemDef.base : flib.GuiElemDef
----@field children modules.GuiElemDef[]|modules.GuiElemDef?
----@field tab modules.GuiElemDef?
----@field content modules.GuiElemDef?
----@field handler GuiModuleEventHandlerNames?
+---@class modules.GuiElemDef.base
+---The name under which this element will be stored in the reference table, or false if not to store it at all.
+---@field ref? string|false
+---The element arguments.
+---@field args? LuaGuiElement.add_param
+---Modifications to make to the element itself.
+---@field elem_mods? LuaGuiElement
+---Modifications to make to the element's style.
+---@field style_mods? LuaStyle
+---Set the element's drag target to the one that matches the string
+---@field drag_target? string
+---The handler(s) for the GUI events regarding this element.
+---@field handler? GuiModuleEventHandlerNames
+---Children to add to this element.
+---@field children? modules.GuiElemDef[]
 
----@class modules.GuiElemDef.instance : modules.GuiElemDef.base
----@field type "instantiable"
+---@class modules.GuiElemDef.tab
+---To add a tab, specify `tab` and `content` and leave all other fields unset.
+---@field tab? modules.GuiElemDef
+---To add a tab, specify `tab` and `content` and leave all other fields unset.
+---@field content? modules.GuiElemDef
+
+---@class modules.GuiSimpleElemDef.base : modules.GuiElemDef.base
+---@field children? modules.GuiSimpleElemDef[]
+---@class modules.GuiSimpleElemDef.tab : modules.GuiElemDef.tab
+---@field tab? modules.GuiSimpleElemDef
+---@field content? modules.GuiSimpleElemDef
+---@alias modules.GuiSimpleElemDef modules.GuiSimpleElemDef.base|modules.GuiSimpleElemDef.tab
+
+---@class modules.GuiTaggedElemDef.base : modules.GuiSimpleElemDef.base
+---@field handler nil Should already be in tags
+---@field children? modules.GuiTaggedElemDef[]
+---@class modules.GuiTaggedElemDef.tab : modules.GuiSimpleElemDef.tab
+---@field tab? modules.GuiTaggedElemDef
+---@field content? modules.GuiTaggedElemDef
+---@alias modules.GuiTaggedElemDef modules.GuiTaggedElemDef.base|modules.GuiTaggedElemDef.tab
+
+---@class modules.GuiElemDef.instance
 ---@field instantiable_name string
 
----@alias (partial) modules.GuiElemDef
+---@alias (partial) modules.ModuleParams
+---| modules.myModuleElem
+---@alias modules.GuiElemDef
 ---| modules.GuiElemDef.base
+---| modules.GuiElemDef.tab
 ---| modules.GuiElemDef.instance
---- --| modules.ModuleParams Each module should add themsselves
+---| modules.ModuleElems Each module should add themselves to this alias
 
 ---@class GuiWindowDef
 ---@field namespace string the namespace the global table is put into
@@ -28,14 +61,14 @@
 ---@field root "top"|"left"|"center"|"goal"|"screen"
 ---@field custominput string?
 ---@field shortcut string?
+---@class GuiWindowProcessedDef : GuiWindowDef
+---@field definition modules.GuiTaggedElemDef
 
 ---@alias GuiModuleEventHandler fun(state:modules.WindowState,elem:LuaGuiElement,event:flib.GuiEventData):LuaGuiElement?,any?
 ---@alias GuiModuleEventHandlers table<any, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlerNames string|table<string,string>
 
----@class modules.ModuleParams : modules.GuiElemDef.base
----@field type "module"
 ---@class modules.ModuleParameterDef
 ---@field is_optional boolean Whether or not this parameter is required
 ---@field type (type|LuaObject.object_name)[] The possible types of this parameter
@@ -50,7 +83,7 @@
 ---@class modules.GuiModuleDef
 ---@field module_type modules.types the name of the module
 ---@field setup_state fun(state:modules.WindowState)? The function to setup state values used in this module
----@field build_func fun(parameters:table):modules.GuiElemDef the function to return a GuiElemDef out of the passed definition
+---@field build_func fun(parameters:table):modules.GuiSimpleElemDef the function to return a GuiElemDef out of the passed definition
 ---@field parameters ModuleParameterDict a table defining the possible parameters of the module
 ---@field handlers GuiModuleEventHandlers the handlers the module uses.
 

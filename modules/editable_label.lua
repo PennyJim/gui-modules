@@ -1,4 +1,9 @@
-local module = {module_type = "editable_label", handlers = {} --[[@as GuiModuleEventHandlers]]}
+---@type modules.GuiModuleDef
+---@diagnostic disable-next-line: missing-fields
+local module = {
+	module_type = "editable_label",
+	handlers = {}
+}
 
 ---@class WindowState.editable_label : modules.WindowState
 -- Where custom fields would go
@@ -15,11 +20,13 @@ local handler_names = {
 
 ---@alias (partial) modules.types
 ---| "editable_label"
----@alias (partial) modules.GuiElemDef
----| EditableLabelDef
-
----@class EditableLabelDef : modules.ModuleParams
+---@alias (partial) modules.ModuleElems
+---| modules.EditableLabelElem
+---@class modules.EditableLabelElem
 ---@field module_type "editable_label"
+---@field args modules.EditableLabelArgs
+
+---@class modules.EditableLabelArgs
 -- where LuaLS parameter definitons go
 ---@field default_caption LocalisedString
 ---@field confirm_handler string?
@@ -49,8 +56,7 @@ module.parameters = {
 }
 
 ---Creates the frame for a window with an exit button
----@param params EditableLabelDef
----@return modules.GuiElemDef.base
+---@param params modules.EditableLabelArgs
 function module.build_func(params)
 	local reserve_space = params.reserve_space ~= false
 	return {
@@ -88,7 +94,7 @@ function module.build_func(params)
 				handler = handler_names.edit_button
 			}
 		}
-	} --[[@as modules.GuiElemDef]]
+	} --[[@as modules.GuiSimpleElemDef]]
 end
 
 ---@param state WindowState.editable_label
@@ -166,4 +172,4 @@ module.handlers[handler_names.unfocus] = function (state)
 	state.opened = nil
 end
 
-return module --[[@as modules.GuiModuleDef]]
+return module

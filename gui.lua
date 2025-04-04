@@ -308,16 +308,16 @@ modules_gui.events[defines.events.on_lua_shortcut] = input_or_shortcut_handler
 ---@param namespace namespace
 ---@param parent LuaGuiElement
 ---@param children modules.GuiElemDef|modules.GuiElemDef[]
----@param do_not_copy boolean?
+---@param copy? boolean
 ---@param elems? table<string,LuaGuiElement> The table to accumulate references into. Will default to the elems table in the state
 ---@return LuaGuiElement
 ---@return table<string, LuaGuiElement>
-function modules_gui.add(namespace, parent, children, do_not_copy, elems)
+function modules_gui.add(namespace, parent, children, copy, elems)
 	---MARK: add
 	if not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
 	end
-	if not do_not_copy then
+	if copy then
 		children = table.deepcopy(children) --[[@as modules.GuiElemDef]]
 	end
 	if not children[1] then
@@ -421,9 +421,9 @@ end
 ---Registers the instance for use in the window's construction
 ---@param namespace namespace
 ---@param new_instances table<string,modules.GuiElemDef>
----@param do_not_copy boolean?
+---@param copy boolean?
 ---@param skip_check boolean? For internal use
-function modules_gui.register_instances(namespace, new_instances, do_not_copy, skip_check)
+function modules_gui.register_instances(namespace, new_instances, copy, skip_check)
 	---MARK: register instance/struct
 	if not skip_check and not namespaces[namespace] then
 		error{"gui-errors.undefined-namespace"}
@@ -433,7 +433,7 @@ function modules_gui.register_instances(namespace, new_instances, do_not_copy, s
 		if registered_instances[name] then
 			error{"gui-errors.instance-already-defined", namespace, name}
 		end
-		if not do_not_copy then
+		if copy then
 			instance = table.deepcopy(instance) --[[@as modules.GuiElemDef]]
 		end
 		local result = {instance}
@@ -500,11 +500,11 @@ function modules_gui.define_window(namespace, window_def, handlers, instances)
 	gui_events.register(handlers, namespace, false)
 
 	if instances then
-		modules_gui.register_instances(namespace, instances, false, true)
+		modules_gui.register_instances(namespace, instances, true, true)
 	end
 	instances = window_def.instances
 	if instances then
-		modules_gui.register_instances(namespace, instances, true, true)
+		modules_gui.register_instances(namespace, instances, false, true)
 	end
 end
 ---@class newWindowParams

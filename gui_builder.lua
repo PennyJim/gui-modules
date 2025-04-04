@@ -60,10 +60,11 @@ local function build(namespace, parent, def, elems)
 			end
 		end
 		if def.style_mods then
+			local style = element.style
 ---@diagnostic disable-next-line: no-unknown
 			for k, v in pairs(def.style_mods) do
 ---@diagnostic disable-next-line: no-unknown
-				element[k] = v
+				style[k] = v
 			end
 		end
 		if def.drag_target then

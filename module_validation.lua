@@ -46,12 +46,12 @@ end
 
 ---Validates the parameters of the module
 ---@param module modules.GuiModuleDef
----@param params ModuleParameterDict
+---@param params table<any,any>
 local function validate_module_params(module, params)
 	local parameter_description = module.parameters
 	local module_type = module.module_type
 	---@type {[string]:modules.ModuleParameterDef}
-	local missing = {} -- mark every paramtere as 'missing'
+	local missing = {} -- mark every parameter as 'missing'
 	for key, value in pairs(parameter_description) do
 		missing[key] = value
 	end

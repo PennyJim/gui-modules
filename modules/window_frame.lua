@@ -27,7 +27,7 @@ local handler_names = {
 ---@alias (partial) modules.types
 ---| "window_frame"
 ---@alias (partial) modules.ModuleElems
----| modules.WindowFrameArgs
+---| modules.WindowFrameElem
 ---@class modules.WindowFrameElem
 ---@field module_type "window_frame"
 ---@field args modules.WindowFrameArgs
@@ -89,23 +89,26 @@ function module.build_func(params)
 							ignored_by_interaction = true,
 						}},
 						-- params.has_config_button and {args={ -- Config button
-						-- 	type = "sprite-button", style = "frame_action_button",
-						-- 	name = "config_button", tooltip = {"gui.flib-settings"},
-						-- 	sprite = "flib_settings_white", hovered_sprite = "flib_settings_black",
+						-- 		type = "sprite-button", style = "frame_action_button",
+						-- 		name = "config_button", tooltip = {"gui.flib-settings"},
+						-- 		sprite = "flib_settings_white", hovered_sprite = "flib_settings_black",
+						-- 	},
 						-- 	handler = params.config_handler,
-						-- }} or {},
+						-- } or nil,
 						params.has_pin_button and {args={ -- Pin button
-							type = "sprite-button", style = "frame_action_button",
-							name = "pin_button", tooltip = {"gui.flib-keep-open"},
-							sprite = "flib_pin_white", hovered_sprite = "flib_pin_black",
+								type = "sprite-button", style = "frame_action_button",
+								name = "pin_button", tooltip = {"gui.flib-keep-open"},
+								sprite = "flib_pin_white", hovered_sprite = "flib_pin_black",
+							},
 							handler = handler_names.pin,
-						}} or {},
+						} or nil,
 						params.has_close_button and {args={ -- Close button
-							type = "sprite-button", style = "frame_action_button",
-							name = "window_close_button", tooltip = {"gui.close-instruction"},
-							sprite = "utility/close",
+								type = "sprite-button", style = "frame_action_button",
+								name = "window_close_button", tooltip = {"gui.close-instruction"},
+								sprite = "utility/close",
+						},
 							handler = "hide",
-						}} or {},
+						} or nil,
 					}
 				},
 				{ -- The flow for the contents

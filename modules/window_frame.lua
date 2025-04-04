@@ -14,8 +14,8 @@ module.setup_state = function(state)
 	-- Make visually pinned
   if state.pinned then
     state.elems.window_close_button.tooltip = { "gui.close" }
-    state.elems.pin_button.sprite = "flib_pin_black"
-    state.elems.pin_button.style = "flib_selected_frame_action_button"
+    state.elems.pin_button.sprite = "modules_pin_black"
+    state.elems.pin_button.style = "modules_selected_frame_action_button"
   end
 end
 -- FIXME: Make sure it can do everything a frame can
@@ -75,7 +75,7 @@ function module.build_func(params)
 			children = {
 				{ -- The titlebar
 					args = {
-						type = "flow", style = "flib_titlebar_flow",
+						type = "flow", style = "modules_titlebar_flow",
 						direction = "horizontal",
 					},
 					drag_target = params.draggable and params.name or nil,
@@ -85,20 +85,20 @@ function module.build_func(params)
 							caption = params.title, ignored_by_interaction = true
 						}},
 						{args={ -- Drag handle
-							type = "empty-widget", style = params.draggable and "flib_titlebar_drag_handle" or "flib_horizontal_pusher",
+							type = "empty-widget", style = params.draggable and "modules_titlebar_drag_handle" or "modules_horizontal_pusher",
 							ignored_by_interaction = true,
 						}},
 						-- params.has_config_button and {args={ -- Config button
 						-- 		type = "sprite-button", style = "frame_action_button",
-						-- 		name = "config_button", tooltip = {"gui.flib-settings"},
-						-- 		sprite = "flib_settings_white", hovered_sprite = "flib_settings_black",
+						-- 		name = "config_button", tooltip = {"gui.modules-settings"},
+						-- 		sprite = "modules_settings_white", hovered_sprite = "modules_settings_black",
 						-- 	},
 						-- 	handler = params.config_handler,
 						-- } or nil,
 						params.has_pin_button and {args={ -- Pin button
 								type = "sprite-button", style = "frame_action_button",
-								name = "pin_button", tooltip = {"gui.flib-keep-open"},
-								sprite = "flib_pin_white", hovered_sprite = "flib_pin_black",
+								name = "pin_button", tooltip = {"gui.modules-keep-open"},
+								sprite = "modules_pin_white", hovered_sprite = "modules_pin_black",
 							},
 							handler = handler_names.pin,
 						} or nil,
@@ -129,15 +129,15 @@ module.handlers[handler_names.pin] = function (state)
   state.pinned = not state.pinned
   if state.pinned then
     state.elems.window_close_button.tooltip = { "gui.close" }
-    state.elems.pin_button.sprite = "flib_pin_black"
-    state.elems.pin_button.style = "flib_selected_frame_action_button"
+    state.elems.pin_button.sprite = "modules_pin_black"
+    state.elems.pin_button.style = "modules_selected_frame_action_button"
     if state.player.opened == state.root then
 			state.pinning = true
       state.player.opened = nil
     end
   else
     state.elems.window_close_button.tooltip = { "gui.close-instruction" }
-    state.elems.pin_button.sprite = "flib_pin_white"
+    state.elems.pin_button.sprite = "modules_pin_white"
     state.elems.pin_button.style = "frame_action_button"
 		if state.opened and state.player.opened == state.opened then
 			state.pinning = true

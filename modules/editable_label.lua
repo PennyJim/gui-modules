@@ -62,7 +62,7 @@ function module.build_func(params)
 	return {
 		args={
 			type = "flow", direction = "horizontal",
-			style = "flib_indicator_flow",
+			style = "modules_indicator_flow",
 		},
 ---@diagnostic disable-next-line: missing-fields
 		style_mods = {

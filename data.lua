@@ -289,3 +289,8 @@ for name, setting in pairs(settings.startup) do
 		validate_module.module(module_name, module)
 	end
 end
+
+--MARK: Data.lua
+
+require("prototypes.style")
+require("prototypes.sprite")

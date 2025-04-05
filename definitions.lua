@@ -45,7 +45,7 @@
 ---@class modules.GuiElemDef.instance
 ---@field instantiable_name string
 
----@alias (partial) modules.ModuleParams
+---@alias (partial) modules.ModuleElems
 ---| modules.myModuleElem
 ---@alias modules.GuiElemDef
 ---| modules.GuiElemDef.base
@@ -64,7 +64,7 @@
 ---@class GuiWindowProcessedDef : GuiWindowDef
 ---@field definition modules.GuiTaggedElemDef
 
----@alias GuiModuleEventHandler fun(state:modules.WindowState,elem:LuaGuiElement,event:flib.GuiEventData):LuaGuiElement?,any?
+---@alias GuiModuleEventHandler fun(state:modules.WindowState,elem:LuaGuiElement,event:EventData.GuiEvents):LuaGuiElement?,any?
 ---@alias GuiModuleEventHandlers table<any, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlersMap table<string, GuiModuleEventHandler>
 ---@alias GuiModuleEventHandlerNames string|table<string,string>

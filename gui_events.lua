@@ -9,7 +9,7 @@ local states
 ---@param namespace string
 ---@param handler GuiModuleEventHandler
 ---@param elem LuaGuiElement
----@param e flib.GuiEventData
+---@param e EventData.GuiEvents
 local function event_wrapper(namespace, handler, elem, e)
 	if not states then
 		states = storage.gui_states
@@ -33,7 +33,7 @@ end
 ---Dispatches an event to a specific element
 ---@param elem LuaGuiElement
 ---@param event defines.events?
----@param e flib.GuiEventData
+---@param e EventData.GuiEvents
 function gui_events.dispatch_specific(elem, event, e)
   local handler_name = elem.tags[tag_key] --[[@as GuiModuleEventHandlerNames?]]
 	if type(handler_name) == "table" then
@@ -48,7 +48,7 @@ function gui_events.dispatch_specific(elem, event, e)
 	event_wrapper(namespace, handler, elem, e)
 end
 ---Handles all GUI events and passes them to the appropriate wrapper function and handler
----@param e flib.GuiEventData
+---@param e EventData.GuiEvents
 function gui_events.dispatch_event(e)
 	local elem = e.element
 	if not elem then return end -- Can't resolve a handler with no element
@@ -113,6 +113,22 @@ function gui_events.convert_handler_names(namespace, handler, elem)
 	end
 	tags[tag_key] = handler_name
 end
+
+---@alias EventData.GuiEvents
+---| EventData.on_gui_checked_state_changed
+---| EventData.on_gui_click
+---| EventData.on_gui_closed
+---| EventData.on_gui_confirmed
+---| EventData.on_gui_elem_changed
+---| EventData.on_gui_hover
+---| EventData.on_gui_leave
+---| EventData.on_gui_location_changed
+---| EventData.on_gui_opened
+---| EventData.on_gui_selected_tab_changed
+---| EventData.on_gui_selection_state_changed
+---| EventData.on_gui_switch_state_changed
+---| EventData.on_gui_text_changed
+---| EventData.on_gui_value_changed
 
 ---@type event_handler.events
 gui_events.events = {}

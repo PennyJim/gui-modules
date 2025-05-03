@@ -20,7 +20,7 @@ local function type_validation(key, value, acceptable_type, module_type)
 	end
 
 	if not is_valid_type then
-		error({"module-errors.parameter-invalid-type", module_type, key, type(value)}, 5)
+		error({"module-errors.parameter-invalid-type", module_type, key, type(value)})
 	end
 end
 
@@ -40,7 +40,7 @@ local function enum_validation(key, value, acceptable_values, module_type)
 	end
 
 	if not matches then
-		error({"module-errors.parameter-invalid-value", module_type, key, value}, 5)
+		error({"module-errors.parameter-invalid-value", module_type, key, value})
 	end
 end
 
@@ -63,7 +63,7 @@ local function validate_module_params(module, params)
 
 		-- Error on extra parameters
 		if not acceptable then
-			error({"module-errors.parameter-extra", module_type, key}, 4) -- TODO: Test all error messages
+			error({"module-errors.parameter-extra", module_type, key}) -- TODO: Test all error messages
 		end
 
 		-- Error on wrong parameter type
@@ -79,7 +79,7 @@ local function validate_module_params(module, params)
 	-- Error for missing required parameters
 	for key, value in pairs(missing) do
 		if not value.is_optional then
-			error({"gui-errors.parameter-missing", module.module_type, key}, 4)
+			error({"gui-errors.parameter-missing", module.module_type, key})
 		end
 	end
 end

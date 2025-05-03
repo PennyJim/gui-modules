@@ -3,10 +3,13 @@ Version: 0.0.6
 Date: ????
   Changes:
     - All (or at least most) of types are now scoped under `module`
-    - Removed the frame action button module as it's one small function is no longer useful
+    - Removed the frame action button module as its one small function is no longer useful
     - When a parameter has a type of `userdata`, it checks the `object_name` of it instead
+    - Definitions are now in 'glib' style instead of 'flib'
+    - The parameter to not deepcopy definitions has been inverted
   Bugfixes:
     - Shortcuts and custominputs defined in `gui.new` now fully overwrite any shortcut or custominput within the given definition
+    - The function to add modules now sets the allowed values, so modules changing path won't cause issues
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.5
 Date: 2024-07-08

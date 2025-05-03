@@ -1,0 +1,65 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.0.7
+Date: ????
+  Changes:
+---------------------------------------------------------------------------------------------------
+Version: 0.0.6
+Date: 2025-05-03
+  Changes:
+    - All (or at least most) of types are now scoped under `module`
+    - Removed the frame action button module as its one small function is no longer useful
+    - When a parameter has a type of `userdata`, it checks the `object_name` of it instead
+    - Definitions are now in 'glib' style instead of 'flib'
+    - The parameter to not deepcopy definitions has been inverted
+  Bugfixes:
+    - Shortcuts and custominputs defined in `gui.new` now fully overwrite any shortcut or custominput within the given definition
+    - The function to add modules now sets the allowed values, so modules changing path won't cause issues
+---------------------------------------------------------------------------------------------------
+Version: 0.0.5
+Date: 2024-07-08
+  Changes:
+    - Added get_state() to safely obtain the WindowState
+    - Moved the expected location of namespace states into its own field in global
+  Bugfixes:
+    - Actually pass the old state to build when applicable
+---------------------------------------------------------------------------------------------------
+Version: 0.0.4
+Date: 2024-07-07
+  Changes:
+    - Changed add() to support multiple elements at once
+  Bugfixes:
+    - Rebuild the UI if the root element is invalid rather than trying to migrate it
+---------------------------------------------------------------------------------------------------
+Version: 0.0.3
+Date: 2024-07-06
+  Bugfixes:
+    - Checked if namespace_metadata was already processed or not
+---------------------------------------------------------------------------------------------------
+Version: 0.0.2
+Date: 2024-07-06
+  Changes:
+    - namespace and a reference to the library are now found in the state
+    - Modules can now setup their values in the window state with setup_state
+    - The user can now setup their values in the window state with register_state_setup
+    - the new function now takes a table of parameters
+      * window_def = the regular definition
+      * handlers? = The event handlers
+      * instances? = Instance definitions (Currently thinking of changing)
+      * shortcut_name? = The name of a shortcut to open/close this window
+      * custominput_name? = The custominput to open/close this window
+      * state_setup? = the function to setup the values you need in state
+    - The add function now returns the created element and elems table
+    - The state is setup *after* putting it in global. This allows functions to actually rely on it being in global.
+  Bugfixes:
+    - window_frame can actually take localized strings like intended
+    - The add function now actually adds elements to the elem table
+      * Do keep in mind that elements in that table are not guaranteed  to still be valid
+    - Properly preserve the reference to gui in the WindowStates (using a metatable)
+    - The on_configuration_changed handler actually functions now
+    - Actually setup global in init/config_changed rather than improperly in the main chunk :facepalm:
+    - Handle there being nothing no previous metadata
+---------------------------------------------------------------------------------------------------
+Version: 0.0.1
+Date: 2024-07-01
+  Major Features:
+    - Existence

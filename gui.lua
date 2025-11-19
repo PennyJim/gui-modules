@@ -370,6 +370,25 @@ function modules_gui.get_state(namespace, player_index)
 	return state, built_state
 end
 
+---@param element LuaGuiElement
+---@param button? defines.mouse_button_type
+---@param isAlt? boolean
+---@param isCtrl? boolean
+---@param isShift? boolean
+function modules_gui.click(element, button, isAlt, isCtrl, isShift)
+	gui_events.dispatch_event{
+		element = element,
+		alt = isAlt ~= nil and isAlt or false,
+		control = isCtrl ~= nil and isCtrl or false,
+		shift = isShift ~= nil and isShift or false,
+		button = button or defines.mouse_button_type.left,
+		player_index = element.player_index,
+		name = defines.events.on_gui_click,
+		cursor_display_location = {0,0},
+		tick = game.tick,
+	}--[[@as EventData.on_gui_click]]
+end
+
 ---Registers a namespace for use
 ---@param namespace namespace
 function modules_gui.new_namespace(namespace)

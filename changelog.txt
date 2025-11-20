@@ -1,7 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.7
 Date: ????
-  Changes:
+  Features:
+    - Added ability to fake clicks
+  Bugfixes:
+    - Fixed style mods attempting to apply as element mods
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.6
 Date: 2025-05-03
